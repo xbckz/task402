@@ -3,6 +3,7 @@
 [![CI](https://github.com/xbckz/task402/actions/workflows/ci.yml/badge.svg)](https://github.com/xbckz/task402/actions/workflows/ci.yml)
 [![Live MCP endpoint](https://img.shields.io/badge/MCP-live%20on%20task402.xyz-47d9b3)](https://task402.xyz/mcp)
 [![x402 payments](https://img.shields.io/badge/payments-x402%20USDC%20on%20Base-79e7ff)](https://task402.xyz/v1/pricing)
+[![Smithery](https://smithery.ai/badge/martin00207/task402)](https://smithery.ai/servers/martin00207/task402)
 
 Give agents bounded evidence from PDFs, public webpages, OpenAPI contracts, and Base chain data. Connect to the hosted **20-tool MCP service** at `https://task402.xyz/mcp`; no local server, API key, or wallet is needed for discovery. Paid calls use x402 v2 USDC on Base. Connecting an MCP host does not automatically give it a payment signer.
 
