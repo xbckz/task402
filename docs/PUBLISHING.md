@@ -55,20 +55,27 @@ $env:Path = "$toolDir;$env:Path"
 & "$toolDir\mcp-publisher.exe" validate
 ```
 
-The current metadata has been validated successfully. GitHub authentication can publish only `io.github.xbckz/*`; the existing `xyz.task402/*` namespace requires the original domain publisher key. Use the same local key that produced the public key at `/.well-known/mcp-registry-auth`:
+The current metadata has been validated successfully. GitHub authentication can publish only `io.github.xbckz/*`; the existing `xyz.task402/*` namespace requires the domain publisher key. The private key is kept outside the repository at `%LOCALAPPDATA%\Task402\mcp-registry-private-key.dpapi`, encrypted with Windows DPAPI for the current user. Never commit or paste its decrypted value. The matching public proof is served by `/.well-known/mcp-registry-auth`.
+
+To publish from this Windows account, decrypt the protected value in memory and pass it directly to the publisher. The command does not write the private key to a file or print it:
 
 ```powershell
-$keySecure = Read-Host 'Registry domain private key (local only)' -AsSecureString
-$keyPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($keySecure)
+$toolDir = Join-Path $env:TEMP 'mcp-publisher'
+$protected = Join-Path $env:LOCALAPPDATA 'Task402\mcp-registry-private-key.dpapi'
+$keySecure = (Get-Content -LiteralPath $protected -Raw).Trim() | ConvertTo-SecureString
+$keyPtr = [IntPtr]::Zero
 try {
+  $keyPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($keySecure)
   $key = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($keyPtr)
-  & "$toolDir\mcp-publisher.exe" login dns --domain task402.xyz --private-key $key
+  & "$toolDir\mcp-publisher.exe" login http --domain task402.xyz --private-key $key
   & "$toolDir\mcp-publisher.exe" publish
 } finally {
-  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($keyPtr)
+  if ($keyPtr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($keyPtr) }
   Remove-Variable key -ErrorAction SilentlyContinue
 }
 ```
+
+If the protected file is lost, generate a new Ed25519 key, update the Worker’s `MCP_REGISTRY_AUTH_PUBLIC_KEY` variable, deploy, and then run the command above. The public proof must be live before `login http` is attempted. A domain key is different from a GitHub OAuth login; GitHub authentication cannot publish a `xyz.task402/*` name.
 
 For Smithery, the repository and Worker deploy are only the source release. Sign in to the `martin00207/task402` listing, open **Releases**, and publish the current remote server. Then use **Settings → Verification → Check again**. Smithery scores the release's live `tools/list` response; a deploy by itself does not create a Smithery release. The canonical connector URL remains `https://task402.xyz/mcp`, while Smithery's generated gateway name is derived from the existing namespace and server ID.
 
