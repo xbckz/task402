@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "xyz.task402/x402-docs",
   "title": "Task402 Agent Evidence Tools",
-  "description": "x402-paid evidence infrastructure for AI agents: index a native-text PDF once, then search, cite, compare, and extract bounded evidence with included tools; also fetch public-page evidence, inspect OpenAPI contracts, and read Base data.",
+  "description": "Paid evidence tools for PDFs, public webpages, OpenAPI contracts, and Base chain data for AI agents.",
   "version": "0.3.2",
   "websiteUrl": "https://task402.xyz",
   "repository": { "url": "https://github.com/xbckz/task402", "source": "github" },
