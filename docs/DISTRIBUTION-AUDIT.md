@@ -5,7 +5,7 @@ Repository audit: 12 October 2026. These findings describe the checked-in source
 ## Discovery findings
 
 - Fixed: the shared paid-tool executor forced Bazaar MCP challenges to advertise `transport: "http"`. It now uses the payment builder's `streamable-http` default for the canonical `/mcp` resource. The regression test checks the tool name, transport, MCP type, and official extension validation before any handler runs.
-- Registry metadata, MCP initialization, and the public server card describe release `0.3.1`. The npm package version describes the application package and is not evidence of a Registry release. Read the live Registry record before reporting a published version.
+- Registry metadata, MCP initialization, and the public server card describe release `0.3.2`. The npm package version describes the application package and is not evidence of a Registry release. Read the live Registry record before reporting a published version.
 - Fixed: the public server card now carries complete JSON Schema input contracts for the published MCP tools, including property types, required fields, array item schemas, and bounds. MCP `tools/list` remains authoritative if a future schema change is not mirrored here.
 - `/v1/tools` currently provides tasks, billing, and interfaces rather than executable input schemas. Direct agents should follow `/openapi.json` for REST or MCP `tools/list` for MCP. Keep these links visible beside the catalog.
 - Fixed: Bazaar MCP challenges now include the complete paid-tool input schemas, including `idempotency_key`, optional selectors, and bounded chain/web fields. The executable server card and payment metadata are covered by regression checks; keep both surfaces synchronized when adding tools.

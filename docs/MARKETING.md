@@ -13,7 +13,7 @@ Lead with the PDF evidence workflow. The strongest repeat-use path is one paid P
 ## Discovery channels
 
 1. **x402 Bazaar** — every paid REST and MCP challenge includes Bazaar metadata and absolute resources. Confirm cataloging through the facilitator discovery endpoint after the first successful payment; cataloging can be asynchronous.
-2. **Official MCP Registry** — publish server.json as xyz.task402/x402-docs at version 0.3.1. Domain namespace proof or GitHub OIDC is required by the Registry publisher flow.
+2. **Official MCP Registry** — publish server.json as xyz.task402/x402-docs at version 0.3.2. Domain namespace proof or GitHub OIDC is required by the Registry publisher flow.
 3. **Glama** — add this repository as an MCP connector. The root `glama.json` declares the GitHub maintainer for ownership verification; listing copy and connection guidance come from this document, the README, and `server.json`. Complete Glama's claim flow to synchronize ownership changes.
 4. **Smithery** — publish the public Streamable HTTP URL after authenticating a Smithery namespace. Use the same concise description and link to /docs.
 5. **Direct agent indexing** — keep /llms.txt, /openapi.json, the server card, robots, and sitemap current. These are free and cacheable, so they can be fetched by crawlers without touching paid stats.

@@ -67,6 +67,8 @@ test("official MCP client initializes, lists tools, receives x402 payment-requir
     const generateDefinition = listed.tools.find((tool) => tool.name === "generate_pdf") as typeof listed.tools[number] & { outputSchema?: { properties?: Record<string, unknown> } };
     assert.ok(generateDefinition.outputSchema, "generated PDF tool must advertise a structured output schema");
     assert.ok(Object.keys(generateDefinition.outputSchema?.properties ?? {}).length >= 6, "output schema should expose useful result fields");
+  assert.ok(generateDefinition.outputSchema?.properties?.x402Version, "paid tools should describe the x402 challenge envelope");
+  assert.ok(generateDefinition.outputSchema?.properties?.error, "tools should describe structured service errors");
     assert.equal((generateDefinition.inputSchema as { properties?: Record<string, { description?: string }> }).properties?.title?.description, "Human-readable title for the generated PDF.");
 
     const input = { title: "Protocol test", markdown: "# MCP handshake\n\nPaid PDF." };

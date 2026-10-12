@@ -347,7 +347,7 @@ function pricingDocument(runtime: ApiRuntime): Record<string, unknown> {
   const documentAmountAtomic = gateway.requirements ? (() => { try { return usdToSixDecimals(documentPriceUsd); } catch { return null; } })() : null;
   return {
     name: "x402-pdf",
-    version: "0.3.1",
+    version: "0.3.2",
     description: "Deterministic x402-paid evidence tools for PDFs, public webpages, OpenAPI contracts, and Base read-only chain data.",
     operation: "generate_pdf",
     formats: ["application/pdf"],
@@ -462,9 +462,9 @@ function mcpServerCard(runtime: ApiRuntime): Record<string, unknown> {
     schemaVersion: "2025-12-11",
     name: "xyz.task402/x402-docs",
     title: "Task402 Agent Evidence Tools",
-    version: "0.3.1",
+    version: "0.3.2",
     description: "x402-paid deterministic evidence tools for PDFs, public webpages, OpenAPI contracts, and Base read-only chain data.",
-    serverInfo: { name: "Task402 Agent Evidence Tools", version: "0.3.1", websiteUrl: runtime.service.config.publicBaseUrl },
+    serverInfo: { name: "Task402 Agent Evidence Tools", version: "0.3.2", websiteUrl: runtime.service.config.publicBaseUrl },
     homepage: runtime.service.config.publicBaseUrl,
     remotes: [{ type: "streamable-http", url: `${runtime.service.config.publicBaseUrl}/mcp` }],
     capabilities: { tools: true },
@@ -559,7 +559,7 @@ function openApiDocument(runtime: ApiRuntime): Record<string, unknown> {
   const base = runtime.service.config.publicBaseUrl.replace(/\/$/, "");
   return {
     openapi: "3.1.0",
-    info: { title: "Task402 Agent Evidence Tools", version: "0.3.1", description: "Deterministic PDF, web evidence, OpenAPI, and Base read-only chain tools for agents." },
+    info: { title: "Task402 Agent Evidence Tools", version: "0.3.2", description: "Deterministic PDF, web evidence, OpenAPI, and Base read-only chain tools for agents." },
     servers: [{ url: base }],
     paths: {
       "/v1/pricing": { get: { operationId: "pricing", responses: { "200": { description: "Machine-readable pricing and limits." } } } },

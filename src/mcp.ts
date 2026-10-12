@@ -18,10 +18,17 @@ const EXAMPLE_TX_HASH = "0x6a20a573804c89b1bf0104ac23ea9bbcd5bcfad53d8f0fd1ead2e
 // Smithery scores the executable MCP contract, not just the human-facing listing.
 // Keep descriptions and useful structured result schemas on every tool so clients
 // can plan calls without reverse-engineering implementation details.  Every field
-// is optional because paid tools also return a structured error/challenge envelope;
-// passthrough preserves forward-compatible fields as the service evolves.
+// keeps successful result fields visible while also documenting the structured
+// error/payment envelopes that MCP clients receive before a paid retry.
 function structuredOutput(shape: Record<string, z.ZodTypeAny>, description: string) {
-  return z.object(shape).passthrough().describe(description);
+  return z.object({
+    ...shape,
+    error: z.unknown().optional(),
+    x402Version: z.number().optional(),
+    resource: z.unknown().optional(),
+    accepts: z.array(z.unknown()).optional(),
+    extensions: z.unknown().optional(),
+  }).passthrough().describe(description);
 }
 
 const jobOutputSchema = structuredOutput({
@@ -70,7 +77,7 @@ export async function handleMcpRequest(request: Request, service: PdfService, al
 
   const discoveryMethod = await inspectDiscoveryMethod(request);
 
-  const server = new McpServer({ name: "x402-pdf", version: "0.3.1" });
+  const server = new McpServer({ name: "x402-pdf", version: "0.3.2" });
   server.registerTool("generate_pdf", {
     title: "Generate PDF",
     description: "Create a professionally formatted, paginated PDF from Markdown. Returns a short-lived download capability.",
