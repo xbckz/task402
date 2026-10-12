@@ -186,7 +186,7 @@ test("public discovery pages are free and do not enter product stats", async () 
   const stats = new SqliteToolStatsStore(":memory:");
   const runtime: ApiRuntime = { service: fixture.service, priceUsd: "0.01", paymentMode: "dev-bypass", allowedMcpOrigins: new Set(), stats, documentRuntime: "node-local" };
   try {
-    for (const path of ["/", "/docs", "/pricing", "/llms.txt", "/robots.txt", "/sitemap.xml", "/v1/pricing", "/.well-known/x402.json", "/v1/tools", "/openapi.json", "/.well-known/mcp/server-card.json", "/.well-known/ai-plugin.json", "/favicon.svg", "/task402-bg.webp"]) {
+    for (const path of ["/", "/docs", "/pricing", "/llms.txt", "/robots.txt", "/sitemap.xml", "/server.json", "/v1/pricing", "/.well-known/x402.json", "/v1/tools", "/openapi.json", "/.well-known/mcp/server-card.json", "/.well-known/ai-plugin.json", "/favicon.svg", "/task402-bg.webp"]) {
       const response = await handleRequest(new Request(`http://localhost${path}`), runtime);
       assert.equal(response.status, 200, path);
       if (path === "/") { const home = await response.text(); assert.match(home, /first-paid-call/); assert.match(home, /document capability window/); }
@@ -197,6 +197,7 @@ test("public discovery pages are free and do not enter product stats", async () 
       if (path === "/robots.txt") assert.match(await response.text(), /User-agent: \*\nAllow: \/\n/);
       if (path === "/sitemap.xml") { const sitemap = await response.text(); assert.match(sitemap, /<loc>https:\/\/pdf\.example\.test\/pricing<\/loc>/); assert.match(sitemap, /citation-verification/); }
       if (path === "/v1/pricing") { const pricing = await response.json() as { billing?: { paid?: string[]; free?: string[] }; operations?: Array<{ name: string; billing: string }> }; assert.ok(pricing.billing?.paid?.includes("generate_pdf")); assert.ok(pricing.billing?.paid?.includes("web_evidence")); assert.ok(pricing.billing?.paid?.includes("inspect_openapi")); assert.ok(pricing.billing?.free?.includes("search_document")); assert.equal(pricing.operations?.find((operation) => operation.name === "generate_pdf")?.billing, "paid"); assert.equal(pricing.operations?.find((operation) => operation.name === "web_evidence")?.billing, "paid"); }
+      if (path === "/server.json") { const manifest = await response.json() as { name?: string; version?: string; remotes?: Array<{ url?: string }>; _meta?: Record<string, unknown> }; assert.equal(manifest.name, "xyz.task402/x402-docs"); assert.equal(manifest.version, "0.3.0"); assert.equal(manifest.remotes?.[0]?.url, "https://pdf.example.test/mcp"); assert.ok(manifest._meta); }
       if (path === "/openapi.json") { const openapi = await response.json() as { openapi?: string; paths?: Record<string, unknown> }; assert.equal(openapi.openapi, "3.1.0"); assert.ok(Object.keys(openapi.paths ?? {}).includes("/v1/jobs/{id}/download")); assert.ok(Object.keys(openapi.paths ?? {}).includes("/v1/documents/{id}/pages/{page}/render")); }
       if (path === "/.well-known/mcp/server-card.json") {
         const card = await response.json() as { name?: string; remotes?: Array<{ url?: string }>; tools?: Array<{ name?: string; inputSchema?: { required?: string[]; properties?: Record<string, unknown> } }> };

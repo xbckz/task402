@@ -84,6 +84,7 @@ async function handleRequestInner(request: Request, runtime: ApiRuntime, url: UR
   const useCase = /^\/docs\/(citation-verification|compare-pdfs|reduce-pdf-context)$/.exec(path)?.[1];
   if (useCase && request.method === "GET") return useCasePage({ baseUrl: runtime.service.config.publicBaseUrl, priceUsd: runtime.priceUsd, documentPriceUsd: runtime.documentPriceUsd ?? "0.01", paymentMode: runtime.paymentMode, documentRuntime: runtime.documentRuntime ?? "unavailable", webEvidencePriceUsd: runtime.webEvidencePriceUsd, openApiPriceUsd: runtime.openApiPriceUsd, chainPriceUsd: runtime.chainPriceUsd }, useCase as Parameters<typeof useCasePage>[1]);
   if (path === "/llms.txt" && request.method === "GET") return llmsText({ baseUrl: runtime.service.config.publicBaseUrl, priceUsd: runtime.priceUsd, documentPriceUsd: runtime.documentPriceUsd ?? "0.01", paymentMode: runtime.paymentMode, documentRuntime: runtime.documentRuntime ?? "unavailable", documentTtlSeconds: runtime.documentTtlSeconds, network: runtime.service.config.payment.requirements?.network, asset: runtime.service.config.payment.requirements?.asset, webEvidencePriceUsd: runtime.webEvidencePriceUsd, openApiPriceUsd: runtime.openApiPriceUsd, chainPriceUsd: runtime.chainPriceUsd });
+  if (path === "/server.json" && request.method === "GET") return json(serverManifest(runtime));
   if (path === "/.well-known/ai-plugin.json" && request.method === "GET") return aiPluginJson(runtime.service.config.publicBaseUrl);
   if (path === "/.well-known/mcp/server-card.json" && request.method === "GET") return json(mcpServerCard(runtime));
   if (path === "/robots.txt" && request.method === "GET") return robotsTxt(runtime.service.config.publicBaseUrl);
@@ -487,6 +488,36 @@ function mcpServerCard(runtime: ApiRuntime): Record<string, unknown> {
       { name: "get_erc20_balance", billing: "x402", price: runtime.chainPriceUsd ?? "0.001", description: "Read one ERC-20 balance on Base.", inputSchema: object(["token", "address", "idempotency_key"], { token: string({ minLength: 1 }), address: string({ minLength: 1 }), network: string(), block: { anyOf: [string(), number()] }, idempotency_key: idempotency }) },
     ],
     limitations: ["No OCR", "Native text only", "Web evidence is public HTTPS HTML/text only", "Chain tools never sign or submit transactions", "Capabilities and recovery keys are bearer secrets"],
+  };
+}
+
+function serverManifest(runtime: ApiRuntime): Record<string, unknown> {
+  const card = mcpServerCard(runtime);
+  const pricing = pricingDocument(runtime);
+  const operations = Array.isArray(pricing.operations) ? pricing.operations as Array<Record<string, unknown>> : [];
+  const paidTools = operations.filter((operation) => operation.billing === "paid").reduce<Record<string, string>>((result, operation) => {
+    result[String(operation.name)] = `$${String(operation.amountUsd)}/${String(operation.unit).replace(/^per /, "")}`;
+    return result;
+  }, {});
+  return {
+    $schema: "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    name: "xyz.task402/x402-docs",
+    title: "Task402 Agent Evidence Tools",
+    description: String(card.description),
+    version: String(card.version),
+    websiteUrl: runtime.service.config.publicBaseUrl,
+    repository: { url: "https://github.com/xbckz/task402", source: "github" },
+    _meta: {
+      "io.modelcontextprotocol.registry/publisher-provided": {
+        documentationUrl: `${runtime.service.config.publicBaseUrl}/docs`,
+        pricingUrl: `${runtime.service.config.publicBaseUrl}/v1/pricing`,
+        useCases: ["Verify page quotes in research PDFs", "Find changed pages between PDF revisions", "Build bounded cited context for an agent", "Fetch public-page evidence", "Inspect and diff OpenAPI contracts", "Read Base balances and receipts", "Generate paginated reports"],
+        toolCount: Array.isArray(card.tools) ? card.tools.length : 0,
+        paidTools,
+        limitations: card.limitations,
+      },
+    },
+    remotes: [{ type: "streamable-http", url: `${runtime.service.config.publicBaseUrl}/mcp` }],
   };
 }
 
