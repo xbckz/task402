@@ -64,6 +64,10 @@ test("official MCP client initializes, lists tools, receives x402 payment-requir
     await client.connect(transport as unknown as Parameters<typeof client.connect>[0]);
     const listed = await client.listTools();
     assert.deepEqual(listed.tools.map((tool) => tool.name).sort(), ["generate_pdf", "get_pdf_job"]);
+    const generateDefinition = listed.tools.find((tool) => tool.name === "generate_pdf") as typeof listed.tools[number] & { outputSchema?: { properties?: Record<string, unknown> } };
+    assert.ok(generateDefinition.outputSchema, "generated PDF tool must advertise a structured output schema");
+    assert.ok(Object.keys(generateDefinition.outputSchema?.properties ?? {}).length >= 6, "output schema should expose useful result fields");
+    assert.equal((generateDefinition.inputSchema as { properties?: Record<string, { description?: string }> }).properties?.title?.description, "Human-readable title for the generated PDF.");
 
     const input = { title: "Protocol test", markdown: "# MCP handshake\n\nPaid PDF." };
     const key = idempotencyKey();
