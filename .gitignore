@@ -1,0 +1,14 @@
+node_modules/
+.data/
+.wrangler/
+.wrangler-dry-run/
+work-render.png
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+!.dev.vars.example
+!.env.example
+*.log
+.impeccable/
+out/

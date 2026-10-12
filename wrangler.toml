@@ -1,0 +1,51 @@
+name = "x402-docs-mvp"
+main = "src/worker.ts"
+compatibility_date = "2026-10-08"
+compatibility_flags = ["nodejs_compat"]
+
+# Dedicated production resources for task402.xyz.
+[[d1_databases]]
+binding = "DB"
+database_name = "x402-docs-mvp"
+database_id = "27c166ff-9da2-4d0f-82d6-876aac851a4d"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "ARTIFACTS"
+bucket_name = "x402-docs-mvp"
+
+[browser]
+binding = "BROWSER"
+
+[[containers]]
+class_name = "DocumentParserContainer"
+scheduling_policy = "durable_object"
+
+[containers.images.parser]
+image = "registry.cloudflare.com/19490bacb092f3553a8457fb592359de/x402-docs-mvp-documentparsercontainer-parser@sha256:2eb149e69e03cc14b6e286a0ba1ff0a5821057862fef6b65c9c2bb5d0016060b"
+
+[[durable_objects.bindings]]
+name = "DOCUMENT_PARSER"
+class_name = "DocumentParserContainer"
+
+[exports.DocumentParserContainer]
+type = "durable-object"
+storage = "sqlite"
+
+[triggers]
+crons = ["17 * * * *"]
+
+[vars]
+PAYMENTS_MODE = "live"
+PUBLIC_BASE_URL = "https://task402.xyz"
+PRICE_USD = "0.01"
+PRICE_DOCUMENT_USD = "0.01"
+PRICE_WEB_EVIDENCE_USD = "0.005"
+PRICE_OPENAPI_USD = "0.001"
+PRICE_CHAIN_USD = "0.001"
+X402_NETWORK = "eip155:8453"
+X402_ASSET = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+X402_PAY_TO = "0xAEA6fDF13ca10aD6B906884ffAcBb58a0e9E144A"
+X402_FACILITATOR_URL = "https://facilitator.openx402.ai"
+MCP_ALLOWED_ORIGINS = "https://task402.xyz"
+MCP_REGISTRY_AUTH_PUBLIC_KEY = "v=MCPv1; k=ed25519; p=TMXS4tCgoTIM5ZaQFl4fDgrpyuZsT5CAycW5soZH7dc="

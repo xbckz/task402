@@ -1,0 +1,19 @@
+# Local only. `npm run dev` accepts this explicit bypass only while bound to loopback.
+PAYMENTS_MODE=dev-bypass
+PRICE_USD=0.01
+PRICE_DOCUMENT_USD=0.01
+PRICE_WEB_EVIDENCE_USD=0.005
+PRICE_OPENAPI_USD=0.001
+PRICE_CHAIN_USD=0.001
+CAPABILITY_SECRET=local-development-secret-change-me-at-least-32-characters
+STATS_PASSWORD=replace-with-a-long-random-operator-password
+
+# Optional for live x402 mode. Keep all secrets out of source control.
+# PAYMENTS_MODE=live
+# PUBLIC_BASE_URL=https://your-worker.example.workers.dev
+# X402_NETWORK=eip155:84532
+# X402_ASSET=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+# X402_PAY_TO=0xYourBaseSepoliaAddress
+# X402_FACILITATOR_URL=https://x402.org/facilitator
+# X402_FACILITATOR_BEARER_TOKEN=
+# STATS_PASSWORD=replace-with-a-long-random-operator-password

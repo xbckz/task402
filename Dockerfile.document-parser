@@ -1,0 +1,11 @@
+FROM node:24-bookworm-slim
+WORKDIR /app
+ENV NODE_ENV=production
+RUN useradd --create-home --uid 10001 parser && chown parser:parser /app
+USER parser
+COPY --chown=parser:parser package.json package-lock.json ./
+RUN npm ci --include=dev --ignore-scripts
+COPY --chown=parser:parser src ./src
+COPY --chown=parser:parser container ./container
+EXPOSE 8080
+CMD ["node", "--import", "tsx/esm", "container/server.ts"]

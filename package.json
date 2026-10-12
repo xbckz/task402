@@ -1,0 +1,47 @@
+{
+  "name": "x402-docs-mvp",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Task402 remote MCP and REST evidence tools with x402 payments",
+  "license": "MIT",
+  "homepage": "https://task402.xyz",
+  "repository": { "type": "git", "url": "https://github.com/xbckz/task402.git" },
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "tsx src/local.ts",
+    "dev:watch": "tsx watch src/local.ts",
+    "discover": "tsx examples/discover.ts",
+    "test:live": "tsx examples/live-test.ts",
+    "test:agent": "tsx examples/live-agent-test.ts",
+    "test:web-evidence": "tsx examples/live-web-evidence-test.ts",
+    "setup:browser": "playwright install chromium",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "deploy:dry-run": "wrangler deploy --dry-run --outdir .wrangler-dry-run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@napi-rs/canvas": "1.0.10",
+    "@x402/core": "2.28.0",
+    "@x402/extensions": "2.28.0",
+    "markdown-it": "15.0.2",
+    "pdfjs-dist": "6.4.299",
+    "sanitize-html": "2.18.0",
+    "zod": "4.1.13"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261009.1",
+    "@types/markdown-it": "14.2.0",
+    "@types/node": "24.10.1",
+    "@types/sanitize-html": "2.16.2",
+    "@x402/evm": "^2.28.0",
+    "playwright": "1.64.0",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "viem": "^2.57.4",
+    "wrangler": "4.149.0"
+  }
+}

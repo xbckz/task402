@@ -1,0 +1,686 @@
+{
+  "researched_on": "2026-10-09",
+  "scope": "Planning only; existing runtime unchanged",
+  "capabilities": [
+    {
+      "id": "DOC-001",
+      "capability": "ingest_document",
+      "priority": "P0",
+      "category": "Access",
+      "proposed_execution": "Worker + R2 + bounded parser",
+      "purpose": "Upload once; issue a private stable document handle; reuse authorized extraction across sessions.",
+      "acceptance_focus": "Content hashing, tenant isolation, immutable versions, upload limits, deletion and expiry.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-002",
+      "capability": "inspect_pdf",
+      "priority": "P0",
+      "category": "Access",
+      "proposed_execution": "Bounded parser; offload large files",
+      "purpose": "Report page count, scan/text coverage, encryption, signatures, forms, attachments and processing requirements.",
+      "acceptance_focus": "Page-level coverage and explicit unknown states; inspection itself stays resource-bounded.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-003",
+      "capability": "get_document_map",
+      "priority": "P0",
+      "category": "Reading",
+      "proposed_execution": "Cached structure + optional parser",
+      "purpose": "List sections, bookmarks, tables and figures so the agent chooses where to look.",
+      "acceptance_focus": "Distinguish embedded bookmarks from inferred headings and preserve correct page ranges.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-004",
+      "capability": "search_document",
+      "priority": "P0",
+      "category": "Reading",
+      "proposed_execution": "Search index + Worker coordinator",
+      "purpose": "Return small cited snippets using exact, phrase and lexical search before optional semantic search.",
+      "acceptance_focus": "Explicit coverage, ranked results, stable locations, bounded results and no false absence claims.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-005",
+      "capability": "read_document",
+      "priority": "P0",
+      "category": "Reading",
+      "proposed_execution": "Cached page/block artifacts",
+      "purpose": "Retrieve selected pages, sections or blocks as text, spatial text, Markdown or JSON.",
+      "acceptance_focus": "Original spans remain available; truncation and cursors explicit; reading order checked.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-006",
+      "capability": "render_page_region",
+      "priority": "P0",
+      "category": "Reading",
+      "proposed_execution": "PDF renderer service or CPU job",
+      "purpose": "Provide a page or bounded crop for visual verification without rendering the whole file.",
+      "acceptance_focus": "Rotation and crop coordinates correct; DPI and pixel limits; private resource by default.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-007",
+      "capability": "quote_document_operation",
+      "priority": "P0",
+      "category": "Billing",
+      "proposed_execution": "Worker + durable budget ledger",
+      "purpose": "Quote processing mode, selected pages, output limits and application charge ceiling before work.",
+      "acceptance_focus": "Request/document binding, quote expiry, atomic budget reservation and explicit fallback policy.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-008",
+      "capability": "ocr_pages",
+      "priority": "P1",
+      "category": "Extraction",
+      "proposed_execution": "OCR provider or isolated CPU job",
+      "purpose": "OCR only selected or demonstrably unreadable pages; cache the result for future reads.",
+      "acceptance_focus": "Mixed native/scan PDFs, languages, abstention, page evidence and no unauthorized premium fallback.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-009",
+      "capability": "extract_tables",
+      "priority": "P1",
+      "category": "Extraction",
+      "proposed_execution": "Parser + optional layout/OCR provider",
+      "purpose": "List tables, then extract selected ones with spans, units, original cells and source boxes.",
+      "acceptance_focus": "Headers and merged cells correct; missing versus zero preserved; continuation joins marked.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-010",
+      "capability": "query_tables",
+      "priority": "P1",
+      "category": "Computation",
+      "proposed_execution": "Bounded table execution service",
+      "purpose": "Filter, aggregate and compare extracted values without model arithmetic or full-table context.",
+      "acceptance_focus": "Typed operations, exact source cells, unit/currency checks and deterministic numeric results.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-011",
+      "capability": "compare_documents",
+      "priority": "P1",
+      "category": "Comparison",
+      "proposed_execution": "CPU diff + optional model summary",
+      "purpose": "Return changed clauses, paragraphs and table cells across revisions, with both source locations.",
+      "acceptance_focus": "Page insertions and reflow do not masquerade as semantic changes; never imply legal equivalence.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-012",
+      "capability": "validate_pdf_output",
+      "priority": "P1",
+      "category": "Quality",
+      "proposed_execution": "Structural checker + renderer + optional vision",
+      "purpose": "Check generated files for expected content, render problems and suspicious clipping or omissions.",
+      "acceptance_focus": "Structural, content, visual and standards findings remain separate; no blanket correctness guarantee.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-013",
+      "capability": "extract_schema",
+      "priority": "P1",
+      "category": "Extraction",
+      "proposed_execution": "Retrieved evidence + optional model + validator",
+      "purpose": "Return only requested JSON fields, with evidence, nulls and validation errors.",
+      "acceptance_focus": "Schema validity separated from factual correctness; absent/unreadable fields are not guessed.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-014",
+      "capability": "verify_citation",
+      "priority": "P1",
+      "category": "Evidence",
+      "proposed_execution": "Cached source spans + optional semantic model",
+      "purpose": "Resolve exact quotations and references to their source page and immutable document version.",
+      "acceptance_focus": "Exact matching distinct from semantic support and source truth; quote context preserved.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-015",
+      "capability": "build_evidence_pack",
+      "priority": "P1",
+      "category": "Evidence",
+      "proposed_execution": "Artifact assembly + renderer",
+      "purpose": "Bundle selected snippets, crops, tables and a source manifest into a reviewable packet.",
+      "acceptance_focus": "Source hashes, page labels, transformation history and consistent cited locations.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-016",
+      "capability": "build_context_packet",
+      "priority": "P1",
+      "category": "Reading",
+      "proposed_execution": "Search/read composition + optional reranking",
+      "purpose": "Return relevant passages and selected table slices in one budgeted call rather than many agent round trips.",
+      "acceptance_focus": "Source locations, neighboring qualifications and units retained; output budget and partial coverage explicit.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-017",
+      "capability": "list_form_fields",
+      "priority": "P1",
+      "category": "Forms",
+      "proposed_execution": "Form-aware parser",
+      "purpose": "Expose actual field names, types, current values and permitted choices before filling.",
+      "acceptance_focus": "Distinguish AcroForm, XFA and flattened documents; unsupported formats explicit.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-018",
+      "capability": "fill_form_fields",
+      "priority": "P2",
+      "category": "Forms",
+      "proposed_execution": "Form-aware CPU job + renderer",
+      "purpose": "Fill selected interactive fields from structured data and optionally flatten the result.",
+      "acceptance_focus": "Appearance streams visible, values read back, choice validation and signature-change warning.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-019",
+      "capability": "extract_annotations",
+      "priority": "P2",
+      "category": "Evidence",
+      "proposed_execution": "PDF parser",
+      "purpose": "Extract review comments, highlights and their anchored text for an agent to address.",
+      "acceptance_focus": "Comment author/date treated as document metadata; locations and unresolved replies preserved.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-020",
+      "capability": "extract_images",
+      "priority": "P2",
+      "category": "Extraction",
+      "proposed_execution": "PDF parser + private image artifacts",
+      "purpose": "Retrieve selected embedded pictures and metadata rather than screenshotting every page.",
+      "acceptance_focus": "Image IDs, page occurrence and captions retained; deduplication does not lose placement.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-021",
+      "capability": "interpret_figure",
+      "priority": "P2",
+      "category": "Visual reasoning",
+      "proposed_execution": "Selected crop + vision model",
+      "purpose": "Describe a chosen diagram, legend or visual element with an explicit evidence crop.",
+      "acceptance_focus": "Distinguish observed labels from interpretation and abstain on unreadable details.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-022",
+      "capability": "digitize_chart",
+      "priority": "P3",
+      "category": "Visual reasoning",
+      "proposed_execution": "Chart engine + vision + optional review",
+      "purpose": "Convert selected charts into approximate data with axes, units and source evidence.",
+      "acceptance_focus": "Mark estimated versus exact values; test logarithmic axes, legends and uncertainty.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-023",
+      "capability": "extract_equations",
+      "priority": "P2",
+      "category": "Extraction",
+      "proposed_execution": "Layout/math parser + optional vision",
+      "purpose": "Read a chosen formula as LaTeX with surrounding definitions and source location.",
+      "acceptance_focus": "Subscripts, symbols and equation numbers checked; no claim of mathematical validity.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-024",
+      "capability": "resolve_cross_references",
+      "priority": "P2",
+      "category": "Reading",
+      "proposed_execution": "Document structure graph",
+      "purpose": "Follow references to sections, tables, figures, appendices and footnotes inside a document.",
+      "acceptance_focus": "Broken references reported; physical page index and printed labels remain distinct.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-025",
+      "capability": "normalize_reading_order",
+      "priority": "P2",
+      "category": "Quality",
+      "proposed_execution": "Layout parser + heuristics",
+      "purpose": "Repair column sequencing, repeated headers and hyphenation while retaining original spans.",
+      "acceptance_focus": "Normalization reversible through source links; footnotes and numbers not silently discarded.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-026",
+      "capability": "assess_extraction_quality",
+      "priority": "P1",
+      "category": "Quality",
+      "proposed_execution": "Heuristics + selected independent checks",
+      "purpose": "Flag sparse, garbled, mismatched or incomplete extraction and propose the cheapest next step.",
+      "acceptance_focus": "Quality flags are calibrated separately; partial coverage and backend failures visible.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-027",
+      "capability": "search_document_collection",
+      "priority": "P2",
+      "category": "Reading",
+      "proposed_execution": "Private collection index",
+      "purpose": "Find relevant passages across an authorized set of PDFs without loading every document.",
+      "acceptance_focus": "Per-result access control, corpus coverage and document/version provenance.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-028",
+      "capability": "detect_duplicate_documents",
+      "priority": "P2",
+      "category": "Comparison",
+      "proposed_execution": "Hashes + optional semantic similarity",
+      "purpose": "Find identical or near-duplicate documents to avoid repeat processing and review.",
+      "acceptance_focus": "Byte identity separate from similarity; private cross-tenant existence is not disclosed.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-029",
+      "capability": "reuse_changed_pages",
+      "priority": "P2",
+      "category": "Comparison",
+      "proposed_execution": "Versioned extraction cache + CPU comparison",
+      "purpose": "Process only changed pages/regions when a new document revision arrives.",
+      "acceptance_focus": "Cache invalidation includes resources, engine settings and dependencies, not just page text.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-030",
+      "capability": "organize_pdf_pages",
+      "priority": "P2",
+      "category": "Transformation",
+      "proposed_execution": "PDF CPU job",
+      "purpose": "Split, merge, reorder, rotate and select pages from structured instructions.",
+      "acceptance_focus": "Internal links, forms, bookmarks, page labels and signature consequences checked.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-031",
+      "capability": "compress_pdf",
+      "priority": "P2",
+      "category": "Transformation",
+      "proposed_execution": "PDF/image CPU job",
+      "purpose": "Reduce storage or transfer size with a declared quality policy and output comparison.",
+      "acceptance_focus": "Compression is not advertised as guaranteed token savings; small text and barcodes preserved.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-032",
+      "capability": "repair_pdf_structure",
+      "priority": "P2",
+      "category": "Transformation",
+      "proposed_execution": "Isolated qpdf or similar job",
+      "purpose": "Attempt bounded repair of damaged cross-references and streams and report changes.",
+      "acceptance_focus": "Repair success separate from safe content, correct rendering or recovered information.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-033",
+      "capability": "make_searchable_pdf",
+      "priority": "P2",
+      "category": "Transformation",
+      "proposed_execution": "OCR + PDF CPU job",
+      "purpose": "Add a searchable text layer to scanned pages while retaining their visual appearance.",
+      "acceptance_focus": "Text aligns to images; original retained; signatures and OCR mistakes explicitly handled.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-034",
+      "capability": "annotate_pdf",
+      "priority": "P2",
+      "category": "Transformation",
+      "proposed_execution": "PDF parser/writer + renderer",
+      "purpose": "Add highlights, comments, labels and source-linked markup to selected locations.",
+      "acceptance_focus": "Coordinates correct after rotation/cropping; originals and existing comments preserved.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-035",
+      "capability": "redact_pdf",
+      "priority": "P3",
+      "category": "Transformation",
+      "proposed_execution": "Dedicated redaction engine + independent verification",
+      "purpose": "Remove selected sensitive content rather than covering it with a black rectangle.",
+      "acceptance_focus": "Defined checks for text, images, attachments, metadata and revisions; unsupported content fails.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-036",
+      "capability": "sanitize_pdf",
+      "priority": "P2",
+      "category": "Quality",
+      "proposed_execution": "Isolated PDF rewriter + checker",
+      "purpose": "Remove declared active content and embedded items under a documented sanitization policy.",
+      "acceptance_focus": "Manifest lists removals; no absolute malware-free guarantee or implied preservation of signatures.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-037",
+      "capability": "open_password_protected_pdf",
+      "priority": "P2",
+      "category": "Access",
+      "proposed_execution": "Isolated parser + secret handling",
+      "purpose": "Process an authorized encrypted PDF using the password supplied for that job.",
+      "acceptance_focus": "No password cracking; passwords never logged or persisted unnecessarily; failure modes explicit.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-038",
+      "capability": "validate_digital_signatures",
+      "priority": "P3",
+      "category": "Evidence",
+      "proposed_execution": "Signature validator + controlled trust/revocation access",
+      "purpose": "Report integrity, signed revisions, permitted changes, certificate trust and timestamps separately.",
+      "acceptance_focus": "Signature image detection is not cryptographic validation; unavailable revocation status remains unknown.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-039",
+      "capability": "sign_pdf",
+      "priority": "P3",
+      "category": "Transformation",
+      "proposed_execution": "External protected signer + PDF signature library",
+      "purpose": "Prepare and sign a document using a caller-controlled secure signing integration.",
+      "acceptance_focus": "No private key custody in agent context; explicit signing intent and document hash confirmation.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-040",
+      "capability": "convert_validate_pdfa",
+      "priority": "P3",
+      "category": "Quality",
+      "proposed_execution": "Conversion backend + veraPDF",
+      "purpose": "Create an archival variant and return the exact profile and validation report.",
+      "acceptance_focus": "Retain original, inspect visual changes and do not label arbitrary PDFs archival without validation.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-041",
+      "capability": "audit_pdf_accessibility",
+      "priority": "P3",
+      "category": "Quality",
+      "proposed_execution": "Structure/standards checker + human review where needed",
+      "purpose": "Report tags, reading order, language, alt text and table-accessibility findings.",
+      "acceptance_focus": "Machine checks distinguished from human checks; no universal accessibility certification.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-042",
+      "capability": "translate_pdf_sections",
+      "priority": "P3",
+      "category": "Transformation",
+      "proposed_execution": "Selected extraction + translation model + renderer",
+      "purpose": "Translate chosen sections into a parallel or newly laid-out artifact with source alignment.",
+      "acceptance_focus": "Original preserved; numbers, names and units checked; layout and translation claims separated.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-043",
+      "capability": "summarize_document_sections",
+      "priority": "P2",
+      "category": "Reasoning",
+      "proposed_execution": "Cached evidence + budgeted model",
+      "purpose": "Create reusable summaries for selected sections with citations and explicit coverage.",
+      "acceptance_focus": "Extracted facts distinguished from model summary; full-document review is not implied.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-044",
+      "capability": "extract_action_items",
+      "priority": "P2",
+      "category": "Reasoning",
+      "proposed_execution": "Selected evidence + schema model",
+      "purpose": "Identify deadlines, obligations and follow-up items with owner/date evidence.",
+      "acceptance_focus": "Quoted source dates preserved; ambiguous deadlines and inference marked rather than invented.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-045",
+      "capability": "process_invoice",
+      "priority": "P2",
+      "category": "Business workflow",
+      "proposed_execution": "OCR/schema pipeline + deterministic validation",
+      "purpose": "Extract line items and totals, preserve tax/currency evidence and flag arithmetic inconsistencies.",
+      "acceptance_focus": "Line-item provenance, duplicate checks, rounding policies and unseen-template tests.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-046",
+      "capability": "process_financial_statement",
+      "priority": "P2",
+      "category": "Business workflow",
+      "proposed_execution": "Tables + typed computation + evidence",
+      "purpose": "Extract statement rows and reconcile opening balance, transactions and closing balance.",
+      "acceptance_focus": "No silent inferred transactions; signs, currency, dates and source rows preserved.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-047",
+      "capability": "read_scanned_form",
+      "priority": "P2",
+      "category": "Forms",
+      "proposed_execution": "OCR/layout provider + schema checks",
+      "purpose": "Read checkboxes, labels and handwritten fields from a selected flat form.",
+      "acceptance_focus": "Unchecked versus unreadable separate; confidence and required-field abstention tested.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-048",
+      "capability": "compare_product_specifications",
+      "priority": "P2",
+      "category": "Business workflow",
+      "proposed_execution": "Schema/table extraction + unit conversion",
+      "purpose": "Compare technical datasheets by requested properties, units and source evidence.",
+      "acceptance_focus": "Part variants, conditions, tolerances and missing specifications do not disappear in normalization.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-049",
+      "capability": "extract_resume_profile",
+      "priority": "P3",
+      "category": "Business workflow",
+      "proposed_execution": "Schema extraction + evidence",
+      "purpose": "Convert a resume into a requested profile schema without invented employment facts.",
+      "acceptance_focus": "Timeline evidence preserved; ambiguous dates remain ambiguous; no automated hiring judgment.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-050",
+      "capability": "extract_contract_clause_matrix",
+      "priority": "P2",
+      "category": "Business workflow",
+      "proposed_execution": "Clause search + schema extraction + evidence",
+      "purpose": "Compare requested clause topics across documents with exact excerpts and missing/unknown states.",
+      "acceptance_focus": "No legal advice or equivalence guarantee; partial search and interpretive labels explicit.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-051",
+      "capability": "read_barcodes_qr",
+      "priority": "P2",
+      "category": "Extraction",
+      "proposed_execution": "Selected page render + barcode decoder",
+      "purpose": "Decode relevant machine-readable codes without model visual guessing.",
+      "acceptance_focus": "Return location and exact bytes; URLs are data and are not automatically opened.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-052",
+      "capability": "extract_pdf_attachments",
+      "priority": "P2",
+      "category": "Access",
+      "proposed_execution": "Bounded PDF/archive extraction",
+      "purpose": "Safely inventory and retrieve embedded XML, CSV, spreadsheets and portfolio components.",
+      "acceptance_focus": "Per-item limits, path normalization and provenance; no execution of attachments or macros.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-053",
+      "capability": "recalculate_spreadsheet",
+      "priority": "P2",
+      "category": "Adjacent documents",
+      "proposed_execution": "Spreadsheet calculation runtime",
+      "purpose": "Evaluate formulas, detect errors and return targeted ranges as reusable evidence.",
+      "acceptance_focus": "Calculation engine and unsupported functions declared; formula text separated from cached values.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-054",
+      "capability": "edit_docx_with_redlines",
+      "priority": "P2",
+      "category": "Adjacent documents",
+      "proposed_execution": "OOXML/document runtime + renderer",
+      "purpose": "Apply structured changes and return a reviewable Word file with comments or tracked revisions.",
+      "acceptance_focus": "True revision structure, preserved styles and rendered verification rather than regex replacement.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-055",
+      "capability": "convert_office_document",
+      "priority": "P2",
+      "category": "Adjacent documents",
+      "proposed_execution": "Isolated office renderer",
+      "purpose": "Convert DOCX, PPTX or XLSX to PDF or previews without requiring agent GUI automation.",
+      "acceptance_focus": "Fonts, page/slide/sheet coverage, print areas and missing dependencies reported.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-056",
+      "capability": "inspect_slide_deck",
+      "priority": "P2",
+      "category": "Adjacent documents",
+      "proposed_execution": "PPTX parser + renderer",
+      "purpose": "Expose slide text, notes, images and targeted visual checks without whole-deck screenshots.",
+      "acceptance_focus": "Hidden slides, notes and reading order explicit; selected checks do not certify the whole deck.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-057",
+      "capability": "capture_web_evidence",
+      "priority": "P2",
+      "category": "Adjacent documents",
+      "proposed_execution": "Browser service + immutable snapshot",
+      "purpose": "Capture a requested page as readable text, screenshot or PDF with URL/time/hash evidence.",
+      "acceptance_focus": "Controlled fetch policy, render limits and source identity; snapshot is not proof of website truth.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-058",
+      "capability": "build_email_attachment_packet",
+      "priority": "P3",
+      "category": "Adjacent documents",
+      "proposed_execution": "EML/MSG parser + private artifacts",
+      "purpose": "Turn supplied email files and attachments into a searchable evidence packet.",
+      "acceptance_focus": "Headers and attachments remain traceable; ingest only, with no automatic email sending.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-059",
+      "capability": "validate_structured_data",
+      "priority": "P1",
+      "category": "Computation",
+      "proposed_execution": "Bounded deterministic execution",
+      "purpose": "Validate JSON/CSV-like records, dates, units and business totals before an agent acts on them.",
+      "acceptance_focus": "Precise error locations, named locale/rounding policies and no silent coercion.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-060",
+      "capability": "generate_chart_artifact",
+      "priority": "P2",
+      "category": "Adjacent documents",
+      "proposed_execution": "Deterministic chart renderer",
+      "purpose": "Turn structured data into SVG/PNG/PDF charts without agent plotting setup.",
+      "acceptance_focus": "Source data retained, units/axes correct, readable rendering and no fabricated values.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-061",
+      "capability": "inspect_extract_archive",
+      "priority": "P3",
+      "category": "Adjacent documents",
+      "proposed_execution": "Isolated archive job",
+      "purpose": "Inventory and retrieve selected files from a document archive without expanding everything.",
+      "acceptance_focus": "Nested archive/decompression/path limits; no execution and per-file source manifest.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-062",
+      "capability": "transcribe_recording",
+      "priority": "P3",
+      "category": "Adjacent documents",
+      "proposed_execution": "ASR provider + timestamp index",
+      "purpose": "Expose searchable transcript segments and selected timestamps for recordings linked to documents.",
+      "acceptance_focus": "Speaker attribution uncertainty, language, consent/context policy and timestamp accuracy tested.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-063",
+      "capability": "render_diagram",
+      "priority": "P2",
+      "category": "Adjacent documents",
+      "proposed_execution": "Bounded diagram renderer",
+      "purpose": "Generate Mermaid, Graphviz or similar diagrams from structured input for reports.",
+      "acceptance_focus": "Syntax diagnostics, bounded rendering and SVG safety; no arbitrary script execution.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-064",
+      "capability": "prepare_document_images",
+      "priority": "P2",
+      "category": "Adjacent documents",
+      "proposed_execution": "Image CPU pipeline",
+      "purpose": "Deskew, rotate, crop and normalize selected scan images before OCR.",
+      "acceptance_focus": "Original preserved; transformation coordinates and interpolation loss reported.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-065",
+      "capability": "generate_pdf_from_template",
+      "priority": "P1",
+      "category": "Generation",
+      "proposed_execution": "Stored template + schema validator + renderer",
+      "purpose": "Generate consistent reports, invoices or packets from structured data without repeating HTML/CSS in agent context.",
+      "acceptance_focus": "Versioned templates and fonts; input schema validation; expected-content checks; reproducible source manifest.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-066",
+      "capability": "patch_generated_document",
+      "priority": "P1",
+      "category": "Generation",
+      "proposed_execution": "Versioned source store + structured patch + renderer",
+      "purpose": "Make small edits to retained Markdown or template data and rerender without resending or rewriting the whole document.",
+      "acceptance_focus": "Base-version conflict detection; stable block/field references; diff and page-scoped QA; no arbitrary PDF-editing promise.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-067",
+      "capability": "generate_document_batch",
+      "priority": "P2",
+      "category": "Generation",
+      "proposed_execution": "Job queue + template renderer",
+      "purpose": "Generate many documents from validated records with one template and a bounded execution budget.",
+      "acceptance_focus": "Per-record status and artifacts; isolated failures; idempotent retries; bounded concurrency and actual usage.",
+      "status": "proposed"
+    },
+    {
+      "id": "DOC-068",
+      "capability": "convert_pdf_to_editable",
+      "priority": "P3",
+      "category": "Transformation",
+      "proposed_execution": "Layout reconstruction + office renderer",
+      "purpose": "Reconstruct an editable document or structured source from a PDF when the original source is unavailable.",
+      "acceptance_focus": "Fidelity report; text/image/table provenance; reconstructed versus preserved structure explicit; no exact-layout guarantee.",
+      "status": "proposed"
+    }
+  ]
+}

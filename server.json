@@ -1,0 +1,28 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "xyz.task402/x402-docs",
+  "title": "Task402 Agent Evidence Tools",
+  "description": "x402-paid evidence infrastructure for AI agents: index a native-text PDF once, then search, cite, compare, and extract bounded evidence with included tools; also fetch public-page evidence, inspect OpenAPI contracts, and read Base data.",
+  "version": "0.3.0",
+  "websiteUrl": "https://task402.xyz",
+  "repository": { "url": "https://github.com/xbckz/task402", "source": "github" },
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "documentationUrl": "https://task402.xyz/docs",
+      "pricingUrl": "https://task402.xyz/v1/pricing",
+      "useCases": ["Verify page quotes in research PDFs", "Find changed pages between PDF revisions", "Build a bounded cited context pack for an agent question", "Fetch public webpages into citation-ready evidence", "Inspect and diff OpenAPI contracts", "Read Base balances and transaction receipts", "Generate paginated reports from Markdown"],
+      "toolCount": 20,
+      "paidTools": {"generate_pdf": "$0.01/PDF", "web_evidence": "$0.005/page", "inspect_openapi": "$0.001/spec", "plan_api_request": "$0.002/plan", "diff_openapi": "$0.002/diff", "get_chain_balance": "$0.001/read", "get_chain_transaction": "$0.001/read", "get_erc20_balance": "$0.001/read"},
+      "restOnlyOperations": {"ingest_document": "$0.01/PDF; POST /v1/documents", "download_pdf": "Included with generation; bearer capability required"},
+      "documentTools": "Included after paid PDF indexing; native-text only; REST upload returns a required bearer capability.",
+      "generationPayments": "x402 v2; client must approve and sign payment separately.",
+      "limitations": ["No OCR", "Web evidence is public HTTPS HTML/text only and does not execute JavaScript", "OpenAPI tools accept JSON and local references only", "Chain tools never sign or submit transactions", "Text matching does not verify factual truth", "Comparison is page-aligned native-text comparison, not a visual or legal redline"]
+    }
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://task402.xyz/mcp"
+    }
+  ]
+}
