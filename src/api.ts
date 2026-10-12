@@ -463,7 +463,7 @@ function mcpServerCard(runtime: ApiRuntime): Record<string, unknown> {
     name: "xyz.task402/x402-docs",
     title: "Task402 Agent Evidence Tools",
     version: "0.3.2",
-    description: "x402-paid deterministic evidence tools for PDFs, public webpages, OpenAPI contracts, and Base read-only chain data.",
+    description: "Paid evidence tools for PDFs, public webpages, OpenAPI contracts, and Base chain data for AI agents.",
     serverInfo: { name: "Task402 Agent Evidence Tools", version: "0.3.2", websiteUrl: runtime.service.config.publicBaseUrl },
     homepage: runtime.service.config.publicBaseUrl,
     remotes: [{ type: "streamable-http", url: `${runtime.service.config.publicBaseUrl}/mcp` }],
