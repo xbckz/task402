@@ -21,6 +21,8 @@ For Cursor, merge [`examples/cursor.mcp.json`](examples/cursor.mcp.json) into `.
 
 Initialize the connection and run `tools/list` to inspect executable schemas. With Node.js 24 and this repository's dependencies installed, `npm run discover` performs discovery through the official MCP SDK and prints tool names only. It never calls a paid tool or signs a payment.
 
+Every hosted tool advertises a tool-specific output schema, parameter descriptions, and MCP safety annotations. Agents can therefore plan the result shape and retry behavior from `tools/list` before approving any x402 payment.
+
 | Tools | Billing at the 12 October 2026 live check |
 | --- | --- |
 | `generate_pdf` | $0.01 per PDF |

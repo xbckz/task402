@@ -40,6 +40,8 @@ Do not commit `.dev.vars`, wallet keys, stats passwords, Cloudflare tokens, faci
 
 `server.json` is the public MCP Registry metadata and `glama.json` marks the repository for Glama discovery. Directory submission, publisher verification, and listing approval are external account actions; they cannot be completed by a repository commit alone. Before submitting, verify that the metadata URL, remote endpoint, tool count, pricing, limitations, and repository commit all match the live service.
 
+For Smithery, the repository and Worker deploy are only the source release. Sign in to the `martin00207/task402` listing, open **Releases**, and publish the current remote server. Then use **Settings → Verification → Check again**. Smithery scores the release's live `tools/list` response; a deploy by itself does not create a Smithery release. The canonical connector URL remains `https://task402.xyz/mcp`, while Smithery's generated gateway name is derived from the existing namespace and server ID.
+
 The public machine-readable entry points are:
 
 - `https://task402.xyz/mcp`
