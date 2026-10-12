@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="title desc">
+  <title id="title">Task402 mark</title>
+  <desc id="desc">A precise focus frame with a centered task signal</desc>
+  <defs>
+    <linearGradient id="task402-logo" x1="7" y1="7" x2="25" y2="25" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fffdf5"/>
+      <stop offset="1" stop-color="#b9f4df"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="28" height="28" rx="9" fill="#08110f" stroke="#2f4d47" stroke-width="1.2"/>
+  <path d="M12 7H9a2 2 0 0 0-2 2v3M20 7h3a2 2 0 0 1 2 2v3M25 20v3a2 2 0 0 1-2 2h-3M12 25H9a2 2 0 0 1-2-2v-3" fill="none" stroke="url(#task402-logo)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.15"/>
+  <rect x="12.1" y="12.1" width="7.8" height="7.8" rx="2.2" fill="#51e0bc"/>
+  <path d="M14.5 16h3M16 14.5v3" fill="none" stroke="#08110f" stroke-linecap="round" stroke-width="1.25"/>
+</svg>
