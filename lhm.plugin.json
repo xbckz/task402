@@ -1,0 +1,1942 @@
+{
+  "author": "xbckz",
+  "authorUrl": "https://github.com/xbckz",
+  "cloudEndpoint": "https://task402.xyz/mcp",
+  "description": "Bounded, citation-ready evidence for AI agents: index native-text PDFs once, then search, cite, compare, and prepare context; fetch public web evidence; inspect OpenAPI contracts; and read Base chain data with x402 USDC payments.",
+  "homepage": "https://task402.xyz/docs",
+  "identifier": "xbckz-task402",
+  "name": "Task402 Agent Evidence Tools",
+  "prompts": [],
+  "resources": [],
+  "tools": [
+    {
+      "name": "generate_pdf",
+      "title": "Generate PDF",
+      "description": "Create a professionally formatted, paginated PDF from Markdown. Returns a short-lived download capability.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "description": "Human-readable title for the generated PDF.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "markdown": {
+            "description": "Markdown content to paginate into the PDF.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 245760
+          },
+          "idempotency_key": {
+            "description": "Stable key used to make a paid retry idempotent.",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "title",
+          "markdown",
+          "idempotency_key"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "state": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "statusUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "capability": {
+            "type": "string"
+          },
+          "artifactBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "settlement": {},
+          "resumed": {
+            "type": "boolean"
+          },
+          "errorCode": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "PDF job status, download capability, and settlement details.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_pdf_job",
+      "title": "Get PDF job status",
+      "description": "Read the status for a PDF job using its unguessable capability.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "description": "Job UUID returned by generate_pdf.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Short-lived capability returned by generate_pdf.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "job_id",
+          "capability"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "state": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "statusUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "capability": {
+            "type": "string"
+          },
+          "artifactBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "settlement": {},
+          "resumed": {
+            "type": "boolean"
+          },
+          "errorCode": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "PDF job status, download capability, and settlement details.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "inspect_pdf",
+      "title": "Inspect PDF",
+      "description": "Inspect a previously uploaded PDF using its document capability. Upload binary PDFs through POST /v1/documents; persist both the returned capability and recovery key securely.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "document_id",
+          "capability"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "byteLength": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "pageCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "metadata": {},
+          "bookmarks": {
+            "type": "array",
+            "items": {}
+          },
+          "formFields": {
+            "type": "array",
+            "items": {}
+          },
+          "attachments": {
+            "type": "array",
+            "items": {}
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "PDF metadata, page count, extracted capabilities, and parser warnings.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_document_map",
+      "title": "Get PDF page map",
+      "description": "Return page labels, sizes, native-text previews, bookmarks, and sparse-text warnings. Set page to include up to 500 positioned text blocks for that page.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "page": {
+            "description": "Optional 1-based page number.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "document_id",
+          "capability"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "pageCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "bookmarks": {
+            "type": "array",
+            "items": {}
+          },
+          "pages": {
+            "type": "array",
+            "items": {}
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "PDF page map with dimensions, text coverage, and optional positioned blocks.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "search_document",
+      "title": "Search PDF text",
+      "description": "Find exact normalized text matches in native PDF text (no OCR). Results and excerpts are bounded.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "query": {
+            "description": "Exact or normalized text to find.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "page": {
+            "description": "Optional 1-based page filter.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "description": "Maximum number of matches to return.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "document_id",
+          "capability",
+          "query"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "query": {
+            "type": "string"
+          },
+          "totalMatches": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "hits": {
+            "type": "array",
+            "items": {}
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Bounded native-text search hits with page evidence.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "batch_search_document",
+      "title": "Batch search PDF text",
+      "description": "Search up to 20 exact normalized-text queries in one bounded call. Useful when an agent needs several clauses or fields from one PDF.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "queries": {
+            "description": "One to twenty exact or normalized text queries.",
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "page": {
+            "description": "Optional 1-based page filter.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "description": "Maximum matches per query.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "document_id",
+          "capability",
+          "queries"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "results": {
+            "type": "array",
+            "items": {}
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Results for each bounded native-text search query.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "prepare_document_context",
+      "title": "Prepare cited PDF context",
+      "description": "Rank native-text pages for a question and return a bounded context pack with page, block, and excerpt evidence. No model call or OCR is used.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "query": {
+            "description": "Question or terms used for deterministic page ranking.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "max_chars": {
+            "description": "Maximum context characters.",
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 32000
+          },
+          "pages": {
+            "description": "Optional 1-based pages to search.",
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "required": [
+          "document_id",
+          "capability",
+          "query"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "query": {
+            "type": "string"
+          },
+          "maxChars": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "selectedPages": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "omittedPages": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "text": {
+            "type": "string"
+          },
+          "pages": {
+            "type": "array",
+            "items": {}
+          },
+          "evidence": {
+            "type": "array",
+            "items": {}
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "method": {
+            "type": "string"
+          },
+          "warning": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Bounded cited context ranked from native PDF text.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "extract_document_fields",
+      "title": "Extract labeled PDF fields",
+      "description": "Extract caller-supplied literal labels and adjacent native-text values with page and block evidence. Missing labels return null; no semantic extraction or OCR is performed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "fields": {
+            "description": "One to twenty literal labels to extract.",
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "description": "Output field name.",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "label": {
+                  "description": "Literal label to locate.",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "page": {
+                  "description": "Optional 1-based page filter.",
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              },
+              "required": [
+                "name",
+                "label"
+              ]
+            }
+          }
+        },
+        "required": [
+          "document_id",
+          "capability",
+          "fields"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "fields": {
+            "type": "array",
+            "items": {}
+          },
+          "warning": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Literal PDF field values with page and block evidence.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "read_document",
+      "title": "Read PDF pages",
+      "description": "Read extractable native text from up to 10 selected pages. Output is limited to 32,000 characters; scanned pages need OCR, which is not provided.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "pages": {
+            "description": "One to ten 1-based page numbers to read.",
+            "minItems": 1,
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "required": [
+          "document_id",
+          "capability",
+          "pages"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "pages": {
+            "type": "array",
+            "items": {}
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Native text for the requested PDF pages.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "verify_document_citation",
+      "title": "Verify PDF text citation",
+      "description": "Check that a quote of 5 to 500 characters appears on the stated page in extracted native text. This does not establish truth or visual reading order.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "page": {
+            "description": "1-based page containing the quote.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "quote": {
+            "description": "Quote to verify in native PDF text.",
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "document_id",
+          "capability",
+          "page",
+          "quote"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageLabel": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string"
+          },
+          "pageTextOffset": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "evidence": {
+            "type": "array",
+            "items": {}
+          },
+          "reason": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "warning": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Citation verification result with exact page and text evidence.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "compare_pdfs",
+      "title": "Compare PDFs",
+      "description": "Compare page count and normalized native text between two separately authorized uploaded PDFs. Image-only and visual differences are not compared.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "left_document_id": {
+            "description": "UUID of the earlier PDF.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "left_capability": {
+            "description": "Capability for the earlier PDF.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "right_document_id": {
+            "description": "UUID of the later PDF.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "right_capability": {
+            "description": "Capability for the later PDF.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "left_document_id",
+          "left_capability",
+          "right_document_id",
+          "right_capability"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "left": {},
+          "right": {},
+          "identicalBytes": {
+            "type": "boolean"
+          },
+          "identicalExtractedPageText": {
+            "type": "boolean"
+          },
+          "changedPageCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "changedPages": {
+            "type": "array",
+            "items": {}
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "method": {
+            "type": "string"
+          },
+          "warning": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Page-by-page normalized native-text comparison result.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "validate_pdf_text",
+      "title": "Validate PDF text expectations",
+      "description": "Check that the PDF parses, has an optional expected page count, and contains required text. This does not perform PDF/A, signature, visual, or OCR validation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "page_count": {
+            "description": "Expected number of pages.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "required_text": {
+            "description": "Literal text strings that must be present.",
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          }
+        },
+        "required": [
+          "document_id",
+          "capability"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "valid": {
+            "type": "boolean"
+          },
+          "checks": {
+            "type": "array",
+            "items": {}
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "PDF parsing, page-count, required-text, and native-text coverage checks.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "render_pdf_page_region",
+      "title": "Render PDF page region",
+      "description": "Render one authorized PDF page crop as PNG. x/y/width/height are normalized 0-1 page fractions; output is bounded to four million pixels.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "description": "UUID returned by POST /v1/documents.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "capability": {
+            "description": "Document capability returned by POST /v1/documents.",
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 64
+          },
+          "page": {
+            "description": "1-based page to render.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "x": {
+            "description": "Normalized left crop coordinate.",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "y": {
+            "description": "Normalized top crop coordinate.",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "width": {
+            "description": "Normalized crop width.",
+            "type": "number",
+            "minimum": 0.001,
+            "maximum": 1
+          },
+          "height": {
+            "description": "Normalized crop height.",
+            "type": "number",
+            "minimum": 0.001,
+            "maximum": 1
+          },
+          "scale": {
+            "description": "Render scale multiplier.",
+            "type": "number",
+            "minimum": 0.5,
+            "maximum": 3
+          }
+        },
+        "required": [
+          "document_id",
+          "capability",
+          "page",
+          "x",
+          "y",
+          "width",
+          "height"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Rendered PDF crop metadata; the image is returned as an MCP image content block.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "web_evidence",
+      "title": "Web evidence",
+      "description": "Fetch a public HTTPS page and return bounded citation-ready evidence.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "Public HTTPS page URL to fetch.",
+            "type": "string",
+            "maxLength": 2048,
+            "format": "uri"
+          },
+          "query": {
+            "description": "Optional phrase to locate in the page.",
+            "type": "string",
+            "maxLength": 200
+          },
+          "max_chars": {
+            "description": "Maximum characters to return.",
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 24000
+          },
+          "idempotency_key": {
+            "description": "Stable key used to make a paid retry idempotent.",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "url",
+          "idempotency_key"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "finalUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fetchedAt": {
+            "type": "string"
+          },
+          "extraction": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "matches": {
+            "type": "array",
+            "items": {}
+          },
+          "links": {
+            "type": "array",
+            "items": {}
+          },
+          "sourceHash": {
+            "type": "string"
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Citation-ready bounded evidence fetched from a public HTTPS page.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "inspect_openapi",
+      "title": "Inspect OpenAPI",
+      "description": "Inspect a caller-supplied OpenAPI JSON document without fetching remote references.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "spec": {
+            "description": "OpenAPI JSON document to inspect; remote references are not fetched."
+          },
+          "idempotency_key": {
+            "description": "Stable key used to make a paid retry idempotent.",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "spec",
+          "idempotency_key"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "string"
+          },
+          "openapi": {
+            "type": "string"
+          },
+          "servers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "operations": {
+            "type": "array",
+            "items": {}
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "resolvedReferences": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "OpenAPI version, servers, operations, response codes, and warnings.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "plan_api_request",
+      "title": "Plan API request",
+      "description": "Select an OpenAPI operation and generate a safe request plan without executing it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "spec": {
+            "description": "OpenAPI JSON document containing the operation to plan."
+          },
+          "operation_id": {
+            "description": "Preferred operationId selector.",
+            "type": "string"
+          },
+          "path": {
+            "description": "Optional path selector.",
+            "type": "string"
+          },
+          "method": {
+            "description": "Optional HTTP method selector.",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "description": "Stable key used to make a paid retry idempotent.",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "spec",
+          "idempotency_key"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "operation": {},
+          "request": {},
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Safe request plan for a selected OpenAPI operation; no request is executed.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "diff_openapi",
+      "title": "Diff OpenAPI",
+      "description": "Compare two caller-supplied OpenAPI JSON documents.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "before": {
+            "description": "Earlier OpenAPI JSON document."
+          },
+          "after": {
+            "description": "Later OpenAPI JSON document."
+          },
+          "idempotency_key": {
+            "description": "Stable key used to make a paid retry idempotent.",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "before",
+          "after",
+          "idempotency_key"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "removed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "changed": {
+            "type": "array",
+            "items": {}
+          },
+          "breaking": {
+            "type": "boolean"
+          },
+          "comparedAt": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "OpenAPI operation additions, removals, compatibility changes, and breaking flag.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_chain_balance",
+      "title": "get_chain_balance",
+      "description": "Read a native Base balance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "description": "EVM wallet address whose native balance should be read.",
+            "type": "string"
+          },
+          "network": {
+            "description": "CAIP-2 network identifier; use eip155:8453 for Base mainnet or eip155:84532 for Base Sepolia.",
+            "type": "string"
+          },
+          "block": {
+            "description": "Optional block number or block tag such as latest.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "idempotency_key": {
+            "description": "Stable key used to make a paid retry idempotent.",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "address",
+          "idempotency_key"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "network": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "block": {
+            "type": "string"
+          },
+          "balanceWei": {
+            "type": "string"
+          },
+          "observedAt": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Native Base balance in wei at the requested block.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_chain_transaction",
+      "title": "get_chain_transaction",
+      "description": "Read a Base transaction and receipt.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tx_hash": {
+            "description": "Transaction hash to inspect on the selected Base network.",
+            "type": "string"
+          },
+          "network": {
+            "description": "CAIP-2 network identifier; use eip155:8453 for Base mainnet or eip155:84532 for Base Sepolia.",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "description": "Stable key used to make a paid retry idempotent.",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "tx_hash",
+          "idempotency_key"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "network": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "blockNumber": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confirmations": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "transaction": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receipt": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "observedAt": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "Base transaction, receipt, status, and confirmation count.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_erc20_balance",
+      "title": "get_erc20_balance",
+      "description": "Read one ERC-20 balance on Base.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "description": "ERC-20 contract address on the selected Base network.",
+            "type": "string"
+          },
+          "address": {
+            "description": "EVM wallet address whose token balance should be read.",
+            "type": "string"
+          },
+          "network": {
+            "description": "CAIP-2 network identifier; use eip155:8453 for Base mainnet or eip155:84532 for Base Sepolia.",
+            "type": "string"
+          },
+          "block": {
+            "description": "Optional block number or block tag such as latest.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "idempotency_key": {
+            "description": "Stable key used to make a paid retry idempotent.",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "token",
+          "address",
+          "idempotency_key"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "network": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "block": {
+            "type": "string"
+          },
+          "balanceAtomic": {
+            "type": "string"
+          },
+          "decimals": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "observedAt": {
+            "type": "string"
+          },
+          "error": {},
+          "x402Version": {
+            "type": "number"
+          },
+          "resource": {},
+          "accepts": {
+            "type": "array",
+            "items": {}
+          },
+          "extensions": {}
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": "ERC-20 token balance in atomic units with optional token metadata.",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ],
+  "version": "0.3.2",
+  "category": "developer",
+  "icon": "https://task402.xyz/favicon.svg",
+  "tags": [
+    "mcp",
+    "agent-tools",
+    "pdf",
+    "documents",
+    "web-evidence",
+    "openapi",
+    "base",
+    "x402"
+  ]
+}

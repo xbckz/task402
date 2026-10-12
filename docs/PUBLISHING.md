@@ -38,7 +38,7 @@ Do not commit `.dev.vars`, wallet keys, stats passwords, Cloudflare tokens, faci
 
 ## MCP directories
 
-`server.json` is the public MCP Registry metadata and `glama.json` marks the repository for Glama discovery. Directory submission, publisher verification, and listing approval are external account actions; they cannot be completed by a repository commit alone. Before submitting, verify that the metadata URL, remote endpoint, tool count, pricing, limitations, and repository commit all match the live service.
+`server.json` is the public MCP Registry metadata, `glama.json` marks the repository for Glama discovery, and `lhm.plugin.json` is the reviewed LobeHub owner manifest generated from the live endpoint. Directory submission, publisher verification, and listing approval are external account actions; they cannot be completed by a repository commit alone. Before submitting, verify that the metadata URL, remote endpoint, tool count, pricing, limitations, and repository commit all match the live service.
 
 For Smithery, the repository and Worker deploy are only the source release. Sign in to the `martin00207/task402` listing, open **Releases**, and publish the current remote server. Then use **Settings → Verification → Check again**. Smithery scores the release's live `tools/list` response; a deploy by itself does not create a Smithery release. The canonical connector URL remains `https://task402.xyz/mcp`, while Smithery's generated gateway name is derived from the existing namespace and server ID.
 
@@ -50,5 +50,21 @@ The public machine-readable entry points are:
 - `https://task402.xyz/v1/pricing`
 - `https://task402.xyz/.well-known/mcp/server-card.json`
 - `https://task402.xyz/.well-known/x402.json`
+
+The prepared marketplace manifests are:
+
+- `server.json` — Official MCP Registry (`xyz.task402/x402-docs`)
+- `glama.json` — Glama repository ownership metadata
+- `lhm.plugin.json` — LobeHub Marketplace owner declaration (`xbckz-task402`)
+
+For LobeHub, the manifest was generated from the live `tools/list` response and includes all 20 tools, their input schemas, output schemas, annotations, the canonical `https://task402.xyz/mcp` endpoint, and the current `0.3.2` service release. Publish it with the LobeHub CLI only after authenticating and connecting the GitHub account that owns this repository:
+
+```powershell
+npx -y @lobehub/market-cli auth status --output json
+npx -y @lobehub/market-cli github status
+npx -y @lobehub/market-cli plugin publish https://github.com/xbckz/task402 --dir "$PWD"
+```
+
+The two status commands are read-only. `lhm login` and `lhm github connect` open a browser and require the account owner to complete OAuth. The publish command creates or updates the listing from the checked-in manifest; it does not replace the canonical MCP endpoint or change x402 pricing.
 
 Keep the README, `server.json`, pricing response, and public docs synchronized whenever a tool, price, transport, or limitation changes. A directory listing improves discovery but does not guarantee agent traffic; publish a working example and a small reproducible workflow with each release.

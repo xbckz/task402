@@ -43,7 +43,7 @@ This project converts Markdown into paginated PDF files through one shared servi
 
 The paid operations are `generate_pdf`, `ingest_document`, `web_evidence`, OpenAPI inspection/planning/diffing, and fixed-method Base chain reads. Retrieval, citation, batch search, bounded context preparation, and explicit-label field matching are included after indexing. Web evidence is public HTTPS HTML/text only, OpenAPI tools accept caller-supplied JSON and local references only, and chain tools never sign or submit transactions. Input HTML is not executed, remote images and other external resources are omitted or blocked, and hyperlinks are preserved in generated PDFs but never fetched during rendering.
 
-Distribution metadata, conversion guidance, and channel-ready copy live in [`docs/MARKETING.md`](docs/MARKETING.md) and [`docs/LAUNCH-KIT.md`](docs/LAUNCH-KIT.md); the public MCP directory metadata is in [`server.json`](server.json) and [`glama.json`](glama.json).
+Distribution metadata, conversion guidance, and channel-ready copy live in [`docs/MARKETING.md`](docs/MARKETING.md) and [`docs/LAUNCH-KIT.md`](docs/LAUNCH-KIT.md); the public MCP directory metadata is in [`server.json`](server.json), [`glama.json`](glama.json), and [`lhm.plugin.json`](lhm.plugin.json) for LobeHub.
 
 The detailed agent, discovery, operations, deployment, operator-stats, and security guide is [`docs/AGENT-GUIDE.md`](./docs/AGENT-GUIDE.md).
 
@@ -266,6 +266,6 @@ If settlement times out or the facilitator returns a pending/ambiguous result, t
 
 ## Distribution readiness
 
-The checked-in directory metadata is in server.json and glama.json; the discovery evidence and publication checklist is in docs/DISTRIBUTION-AUDIT.md. Before claiming directory availability, verify the live MCP Registry record, facilitator Bazaar resource, and any third-party listing URL against the current /v1/pricing contract. These files prepare the submission; external directories still require their own publisher or repository workflow.
+The checked-in directory metadata is in `server.json`, `glama.json`, and `lhm.plugin.json`; the discovery evidence and publication checklist is in [`docs/DISTRIBUTION-AUDIT.md`](docs/DISTRIBUTION-AUDIT.md). Before claiming directory availability, verify the live MCP Registry record, facilitator Bazaar resource, and any third-party listing URL against the current `/v1/pricing` contract. These files prepare the submission; external directories still require their own publisher or repository workflow.
 
 Agents should prefer /v1/pricing for current prices, /openapi.json for REST schemas, and MCP tools/list for executable input schemas. The public /docs, /llms.txt, and /sitemap.xml pages are intentionally credential-free so crawlers can understand the service before any payment.
