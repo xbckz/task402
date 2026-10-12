@@ -3,7 +3,7 @@
   "name": "xyz.task402/x402-docs",
   "title": "Task402 Agent Evidence Tools",
   "description": "x402-paid evidence infrastructure for AI agents: index a native-text PDF once, then search, cite, compare, and extract bounded evidence with included tools; also fetch public-page evidence, inspect OpenAPI contracts, and read Base data.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "websiteUrl": "https://task402.xyz",
   "repository": { "url": "https://github.com/xbckz/task402", "source": "github" },
   "_meta": {

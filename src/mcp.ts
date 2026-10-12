@@ -70,7 +70,7 @@ export async function handleMcpRequest(request: Request, service: PdfService, al
 
   const discoveryMethod = await inspectDiscoveryMethod(request);
 
-  const server = new McpServer({ name: "x402-pdf", version: "0.3.0" });
+  const server = new McpServer({ name: "x402-pdf", version: "0.3.1" });
   server.registerTool("generate_pdf", {
     title: "Generate PDF",
     description: "Create a professionally formatted, paginated PDF from Markdown. Returns a short-lived download capability.",
