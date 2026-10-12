@@ -20,7 +20,7 @@ export function mcpPdfResource(service: PdfService): string {
   return `${service.config.publicBaseUrl.replace(/\/+$/, "")}/mcp`;
 }
 
-export async function handleMcpRequest(request: Request, service: PdfService, allowedOrigins: Set<string>, documents?: PdfDocumentService, stats?: ToolStatsStore, paidTools?: PaidToolService, prices: { webEvidencePriceUsd?: string; openApiPriceUsd?: string; chainPriceUsd?: string; webHostResolver?: PublicHostResolver } = {}): Promise<Response> {
+export async function handleMcpRequest(request: Request, service: PdfService, allowedOrigins: Set<string>, documents?: PdfDocumentService, stats?: ToolStatsStore, paidTools?: PaidToolService, prices: { webEvidencePriceUsd?: string; openApiPriceUsd?: string; chainPriceUsd?: string; webHostResolver?: PublicHostResolver; webFetch?: typeof fetch } = {}): Promise<Response> {
   const origin = request.headers.get("origin");
   if (origin && !allowedOrigins.has(origin)) {
     return Response.json({ error: { code: "origin_not_allowed", message: "MCP Origin is not allowed." } }, { status: 403 });
@@ -219,11 +219,11 @@ async function withToolStats(stats: ToolStatsStore | undefined, tool: string, op
   }
 }
 
-function registerPaidTools(server: McpServer, paidTools: PaidToolService, stats: ToolStatsStore | undefined, prices: { webEvidencePriceUsd?: string; openApiPriceUsd?: string; chainPriceUsd?: string; webHostResolver?: PublicHostResolver }): void {
+function registerPaidTools(server: McpServer, paidTools: PaidToolService, stats: ToolStatsStore | undefined, prices: { webEvidencePriceUsd?: string; openApiPriceUsd?: string; chainPriceUsd?: string; webHostResolver?: PublicHostResolver; webFetch?: typeof fetch }): void {
   const webDefinition: PaidToolDefinition = { name: "web_evidence", resourcePath: "/mcp", priceUsd: prices.webEvidencePriceUsd ?? "0.005", description: "Fetch a public HTTPS page and return bounded citation-ready evidence.", inputSchema: { type: "object", required: ["url", "idempotency_key"], additionalProperties: false, properties: { url: { type: "string", format: "uri", maxLength: 2048 }, query: { type: "string", maxLength: 200 }, max_chars: { type: "integer", minimum: 2000, maximum: 24000 }, idempotency_key: { type: "string", minLength: 8, maxLength: 128 } } }, example: { url: "https://example.com/", query: "Example Domain", max_chars: 4000, idempotency_key: "web-evidence-0001" }, outputExample: { text: "...", sourceHash: "sha256" } };
   server.registerTool("web_evidence", { title: "Web evidence", description: webDefinition.description, annotations: { readOnlyHint: true, idempotentHint: true }, inputSchema: { url: z.string().url().max(2048), query: z.string().max(200).optional(), max_chars: z.number().int().min(2000).max(24000).optional(), idempotency_key: z.string().min(8).max(128) } }, async ({ url, query, max_chars, idempotency_key }, extra) => {
     const input = { url, ...(query !== undefined ? { query } : {}), ...(max_chars !== undefined ? { max_chars } : {}) };
-    return withToolStats(stats, "web_evidence", () => paidMcpCall(paidTools, webDefinition, input, idempotency_key, extra._meta?.["x402/payment"], () => fetchWebEvidence(input, fetch, prices.webHostResolver)), usdToSixDecimals(webDefinition.priceUsd));
+    return withToolStats(stats, "web_evidence", () => paidMcpCall(paidTools, webDefinition, input, idempotency_key, extra._meta?.["x402/payment"], () => fetchWebEvidence(input, prices.webFetch ?? fetch, prices.webHostResolver)), usdToSixDecimals(webDefinition.priceUsd));
   });
 
   const inspectDefinition: PaidToolDefinition = { name: "inspect_openapi", resourcePath: "/mcp", priceUsd: prices.openApiPriceUsd ?? "0.001", description: "Inspect a caller-supplied OpenAPI JSON document without fetching remote references.", inputSchema: { type: "object", required: ["spec", "idempotency_key"], additionalProperties: false, properties: { spec: {}, idempotency_key: { type: "string", minLength: 8, maxLength: 128 } } }, example: { spec: { openapi: "3.1.0", info: { title: "Example", version: "1" }, paths: {} }, idempotency_key: "openapi-inspect-0001" }, outputExample: { operations: [] } };

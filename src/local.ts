@@ -1,6 +1,9 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { existsSync, readFileSync } from "node:fs";
 import { lookup } from "node:dns/promises";
+import { request as httpsRequest } from "node:https";
+import { isIP } from "node:net";
+import { Readable } from "node:stream";
 import { resolve } from "node:path";
 import { FileArtifactStore, SqliteJobStore, SqlitePaidToolCallStore, SqlitePdfDocumentStore } from "./local-store.js";
 import { ChromiumPdfRenderer } from "./local-renderer.js";
@@ -88,6 +91,31 @@ const resolvePublicHost: PublicHostResolver = async (hostname) => {
   if (values.some(isPrivateIpAddress)) throw new Error("Private DNS destination.");
   return values;
 };
+const fetchPublicUrl: typeof fetch = async (input, init = {}) => {
+  const requestUrl = new URL(typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url);
+  const addresses = await lookup(requestUrl.hostname, { all: true, verbatim: true });
+  if (addresses.length === 0 || addresses.some((entry) => isPrivateIpAddress(entry.address))) throw new Error("Private DNS destination.");
+  const address = addresses[0]!;
+  return new Promise<Response>((resolve, reject) => {
+    const signal = init.signal;
+    const headers = Object.fromEntries(new Headers(init.headers));
+    const request = httpsRequest({
+      protocol: "https:", hostname: requestUrl.hostname, port: requestUrl.port || 443,
+      path: `${requestUrl.pathname}${requestUrl.search}`, method: init.method ?? "GET", headers,
+      servername: requestUrl.hostname, agent: false,
+      lookup: (_hostname, _options, callback) => callback(null, address.address, isIP(address.address)),
+    }, (response) => {
+      const responseHeaders = new Headers();
+      for (const [name, value] of Object.entries(response.headers)) if (value !== undefined) responseHeaders.set(name, Array.isArray(value) ? value.join(", ") : value);
+      resolve(new Response(Readable.toWeb(response) as ReadableStream, { status: response.statusCode ?? 502, ...(response.statusMessage ? { statusText: response.statusMessage } : {}), headers: responseHeaders }));
+    });
+    const abort = () => request.destroy(signal?.reason instanceof Error ? signal.reason : new Error("The request was aborted."));
+    if (signal?.aborted) { abort(); return; }
+    signal?.addEventListener("abort", abort, { once: true });
+    request.once("error", reject);
+    request.end();
+  });
+};
 const runtime: ApiRuntime = {
   service,
   priceUsd: process.env.PRICE_USD ?? "0.01",
@@ -104,6 +132,7 @@ const runtime: ApiRuntime = {
   openApiPriceUsd: process.env.PRICE_OPENAPI_USD ?? "0.001",
   chainPriceUsd: process.env.PRICE_CHAIN_USD ?? "0.001",
   webHostResolver: resolvePublicHost,
+  webFetch: fetchPublicUrl,
 };
 
 const cleanup = async (): Promise<void> => {

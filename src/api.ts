@@ -33,6 +33,7 @@ export interface ApiRuntime {
   openApiPriceUsd?: string;
   chainPriceUsd?: string;
   webHostResolver?: PublicHostResolver;
+  webFetch?: typeof fetch;
 }
 
 export async function handleRequest(request: Request, runtime: ApiRuntime): Promise<Response> {
@@ -99,7 +100,7 @@ async function handleRequestInner(request: Request, runtime: ApiRuntime, url: UR
   if (request.method === "POST" && path === "/v1/chain/balance") return chainTool(request, runtime, "balance");
   if (request.method === "POST" && path === "/v1/chain/transaction") return chainTool(request, runtime, "transaction");
   if (request.method === "POST" && path === "/v1/chain/erc20-balance") return chainTool(request, runtime, "erc20-balance");
-  if (path === "/mcp") return handleMcpRequest(request, runtime.service, runtime.allowedMcpOrigins, runtime.documents, runtime.stats, runtime.paidTools, { ...(runtime.webEvidencePriceUsd ? { webEvidencePriceUsd: runtime.webEvidencePriceUsd } : {}), ...(runtime.openApiPriceUsd ? { openApiPriceUsd: runtime.openApiPriceUsd } : {}), ...(runtime.chainPriceUsd ? { chainPriceUsd: runtime.chainPriceUsd } : {}), ...(runtime.webHostResolver ? { webHostResolver: runtime.webHostResolver } : {}) });
+  if (path === "/mcp") return handleMcpRequest(request, runtime.service, runtime.allowedMcpOrigins, runtime.documents, runtime.stats, runtime.paidTools, { ...(runtime.webEvidencePriceUsd ? { webEvidencePriceUsd: runtime.webEvidencePriceUsd } : {}), ...(runtime.openApiPriceUsd ? { openApiPriceUsd: runtime.openApiPriceUsd } : {}), ...(runtime.chainPriceUsd ? { chainPriceUsd: runtime.chainPriceUsd } : {}), ...(runtime.webHostResolver ? { webHostResolver: runtime.webHostResolver } : {}), ...(runtime.webFetch ? { webFetch: runtime.webFetch } : {}) });
   if (path === "/v1/documents" && request.method === "POST") {
     if (!runtime.documents) return documentRuntimeUnavailable();
     return ingestDocument(request, runtime);
@@ -266,7 +267,7 @@ async function webEvidence(request: Request, runtime: ApiRuntime): Promise<Respo
     name: "web_evidence", resourcePath: "/v1/web/evidence", priceUsd: runtime.webEvidencePriceUsd ?? "0.005", description: "Fetch a public HTTPS page and return bounded citation-ready evidence.",
     inputSchema: { type: "object", required: ["url"], additionalProperties: false, properties: { url: { type: "string", format: "uri", maxLength: 2048 }, query: { type: "string", maxLength: 200 }, max_chars: { type: "integer", minimum: 2000, maximum: 24000 } } },
     example: { url: "https://example.com/", query: "Example Domain", max_chars: 4000 }, outputExample: { finalUrl: "https://example.com/", text: "...", sourceHash: "sha256" },
-  }, input, () => fetchWebEvidence(input as { url: string; query?: string; max_chars?: number }, fetch, runtime.webHostResolver));
+  }, input, () => fetchWebEvidence(input as { url: string; query?: string; max_chars?: number }, runtime.webFetch ?? fetch, runtime.webHostResolver));
 }
 
 async function openApiInspect(request: Request, runtime: ApiRuntime): Promise<Response> {

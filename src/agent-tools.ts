@@ -250,6 +250,18 @@ function isPrivateHost(host: string): boolean {
 export function isPrivateIpAddress(value: string): boolean {
   const normalized = value.trim().toLowerCase().replace(/%.+$/, "");
   if (normalized.includes(":")) {
+    if (normalized.startsWith("::ffff:")) {
+      const mapped = normalized.slice(7);
+      if (mapped.includes(".")) return isPrivateIpAddress(mapped);
+      const parts = mapped.split(":");
+      if (parts.length === 2 && parts.every((part) => /^[0-9a-f]{1,4}$/.test(part))) {
+        const high = Number.parseInt(parts[0]!, 16), low = Number.parseInt(parts[1]!, 16);
+        return isPrivateIpAddress(`${high >> 8}.${high & 255}.${low >> 8}.${low & 255}`);
+      }
+      return true;
+    }
+    const last = normalized.slice(normalized.lastIndexOf(":") + 1);
+    if (last.includes(".")) return isPrivateIpAddress(last);
     return normalized === "::" || normalized === "::1" || normalized.startsWith("fe8") || normalized.startsWith("fe9") || normalized.startsWith("fea") || normalized.startsWith("feb") || normalized.startsWith("fc") || normalized.startsWith("fd");
   }
   const parts = normalized.split(".");

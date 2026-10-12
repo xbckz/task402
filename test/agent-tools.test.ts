@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { diffOpenApi, fetchWebEvidence, inspectOpenApi, planOpenApiRequest, readChainBalance } from "../src/agent-tools.js";
+import { diffOpenApi, fetchWebEvidence, inspectOpenApi, isPrivateIpAddress, planOpenApiRequest, readChainBalance } from "../src/agent-tools.js";
 import { SqlitePaidToolCallStore } from "../src/local-store.js";
 import { PaidToolService } from "../src/paid-tools.js";
 import type { PaidToolDefinition } from "../src/paid-tools.js";
@@ -47,6 +47,8 @@ test("web evidence rejects DNS names that resolve to private addresses", async (
   await assert.rejects(() => fetchWebEvidence({ url: "https://public-looking.example/" }, fetchStub, async () => ["192.168.1.20"]), /private DNS destinations/);
   const result = await fetchWebEvidence({ url: "https://public-looking.example/" }, fetchStub, async () => ["93.184.216.34"]);
   assert.equal(result.text, "ok");
+  assert.equal(isPrivateIpAddress("::ffff:127.0.0.1"), true);
+  assert.equal(isPrivateIpAddress("::ffff:7f00:1"), true);
 });
 
 const spec = { openapi: "3.1.0", info: { title: "Example", version: "1" }, servers: [{ url: "https://api.example.com" }], paths: { "/users/{id}": { get: { operationId: "getUser", parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }] } } } };
