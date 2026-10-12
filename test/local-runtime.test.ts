@@ -8,6 +8,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { FileArtifactStore, SqliteJobStore } from "../src/local-store.js";
+import { pinnedLookupValue } from "../src/pinned-dns.js";
+
+test("pinned DNS lookup preserves Node's all-address callback shape", () => {
+  const address = { address: "93.184.216.34", family: 4 };
+  assert.deepEqual(pinnedLookupValue(address, true), [address]);
+  assert.equal(pinnedLookupValue(address, false), address.address);
+});
 
 test("local process rejects rebinding and oversize bodies and cleans persisted expired jobs on startup", { timeout: 30_000 }, async () => {
   const directory = await mkdtemp(join(tmpdir(), "x402-audit-"));

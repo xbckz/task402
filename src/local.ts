@@ -17,6 +17,7 @@ import { LocalPdfParser } from "./local-pdf-parser.js";
 import { SqliteToolStatsStore } from "./local-stats.js";
 import { PaidToolService } from "./paid-tools.js";
 import { isPrivateIpAddress, type PublicHostResolver } from "./agent-tools.js";
+import { pinnedLookupValue } from "./pinned-dns.js";
 
 const root = process.cwd();
 loadVars(resolve(root, ".dev.vars"));
@@ -103,7 +104,12 @@ const fetchPublicUrl: typeof fetch = async (input, init = {}) => {
       protocol: "https:", hostname: requestUrl.hostname, port: requestUrl.port || 443,
       path: `${requestUrl.pathname}${requestUrl.search}`, method: init.method ?? "GET", headers,
       servername: requestUrl.hostname, agent: false,
-      lookup: (_hostname, _options, callback) => callback(null, address.address, isIP(address.address)),
+      lookup: (_hostname, options, callback) => {
+        const pinned = { address: address.address, family: isIP(address.address) };
+        const value = pinnedLookupValue(pinned, options.all === true);
+        if (options.all) callback(null, value as { address: string; family: number }[]);
+        else callback(null, value as string, pinned.family);
+      },
     }, (response) => {
       const responseHeaders = new Headers();
       for (const [name, value] of Object.entries(response.headers)) if (value !== undefined) responseHeaders.set(name, Array.isArray(value) ? value.join(", ") : value);
