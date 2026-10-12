@@ -40,6 +40,36 @@ Do not commit `.dev.vars`, wallet keys, stats passwords, Cloudflare tokens, faci
 
 `server.json` is the public MCP Registry metadata, `glama.json` marks the repository for Glama discovery, and `lhm.plugin.json` is the reviewed LobeHub owner manifest generated from the live endpoint. Directory submission, publisher verification, and listing approval are external account actions; they cannot be completed by a repository commit alone. Before submitting, verify that the metadata URL, remote endpoint, tool count, pricing, limitations, and repository commit all match the live service.
 
+The official Registry publisher is a standalone binary. On Windows, use `curl.exe` for the download because the PowerShell web cmdlet can terminate large GitHub release downloads before the archive is written:
+
+```powershell
+$arch = if ([Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq 'Arm64') { 'arm64' } else { 'amd64' }
+$toolDir = Join-Path $env:TEMP 'mcp-publisher'
+New-Item -ItemType Directory -Force $toolDir | Out-Null
+curl.exe -L --fail --retry 4 --retry-delay 2 --retry-all-errors `
+  --user-agent 'task402-publisher' `
+  --output "$toolDir\mcp-publisher.tar.gz" `
+  "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_windows_$arch.tar.gz"
+tar -xzf "$toolDir\mcp-publisher.tar.gz" -C $toolDir
+$env:Path = "$toolDir;$env:Path"
+& "$toolDir\mcp-publisher.exe" validate
+```
+
+The current metadata has been validated successfully. GitHub authentication can publish only `io.github.xbckz/*`; the existing `xyz.task402/*` namespace requires the original domain publisher key. Use the same local key that produced the public key at `/.well-known/mcp-registry-auth`:
+
+```powershell
+$keySecure = Read-Host 'Registry domain private key (local only)' -AsSecureString
+$keyPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($keySecure)
+try {
+  $key = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($keyPtr)
+  & "$toolDir\mcp-publisher.exe" login dns --domain task402.xyz --private-key $key
+  & "$toolDir\mcp-publisher.exe" publish
+} finally {
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($keyPtr)
+  Remove-Variable key -ErrorAction SilentlyContinue
+}
+```
+
 For Smithery, the repository and Worker deploy are only the source release. Sign in to the `martin00207/task402` listing, open **Releases**, and publish the current remote server. Then use **Settings → Verification → Check again**. Smithery scores the release's live `tools/list` response; a deploy by itself does not create a Smithery release. The canonical connector URL remains `https://task402.xyz/mcp`, while Smithery's generated gateway name is derived from the existing namespace and server ID.
 
 The public machine-readable entry points are:
