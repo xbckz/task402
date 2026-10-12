@@ -15,6 +15,15 @@ const EXAMPLE_ADDRESS = "0xAEA6fDF13ca10aD6B906884ffAcBb58a0e9E144A";
 const EXAMPLE_USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const EXAMPLE_TX_HASH = "0x6a20a573804c89b1bf0104ac23ea9bbcd5bcfad53d8f0fd1ead2edbe40209c3f";
 
+// Smithery scores the executable MCP contract, not just the human-facing listing.
+// Keep descriptions and a structured JSON result schema on every tool so clients
+// can plan calls without reverse-engineering implementation details.
+const genericOutputSchema = z.object({}).passthrough().describe("Structured JSON result for this tool.");
+
+function described<T extends z.ZodTypeAny>(schema: T, description: string): T {
+  return schema.describe(description) as T;
+}
+
 /** Canonical HTTPS resource advertised to x402/Bazaar clients. */
 export function mcpPdfResource(service: PdfService): string {
   return `${service.config.publicBaseUrl.replace(/\/+$/, "")}/mcp`;
@@ -32,11 +41,12 @@ export async function handleMcpRequest(request: Request, service: PdfService, al
   server.registerTool("generate_pdf", {
     title: "Generate PDF",
     description: "Create a professionally formatted, paginated PDF from Markdown. Returns a short-lived download capability.",
-    annotations: { idempotentHint: true, destructiveHint: false },
+    annotations: { idempotentHint: true, destructiveHint: false, readOnlyHint: false, openWorldHint: false },
+    outputSchema: genericOutputSchema,
     inputSchema: {
-      title: z.string().min(1).max(160),
-      markdown: z.string().min(1).max(240 * 1024),
-      idempotency_key: z.string().min(8).max(128),
+      title: described(z.string().min(1).max(160), "Human-readable title for the generated PDF."),
+      markdown: described(z.string().min(1).max(240 * 1024), "Markdown content to paginate into the PDF."),
+      idempotency_key: described(z.string().min(8).max(128), "Stable key used to make a paid retry idempotent."),
     },
   }, async (args, extra): Promise<CallToolResult> => withToolStats(stats, "generate_pdf", async () => {
     const payment = asPaymentPayload(extra._meta?.["x402/payment"]);
@@ -60,10 +70,11 @@ export async function handleMcpRequest(request: Request, service: PdfService, al
   server.registerTool("get_pdf_job", {
     title: "Get PDF job status",
     description: "Read the status for a PDF job using its unguessable capability.",
-    annotations: { readOnlyHint: true, idempotentHint: true },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    outputSchema: genericOutputSchema,
     inputSchema: {
-      job_id: z.string().uuid(),
-      capability: z.string().min(40).max(64),
+      job_id: described(z.string().uuid(), "Job UUID returned by generate_pdf."),
+      capability: described(z.string().min(40).max(64), "Short-lived capability returned by generate_pdf."),
     },
   }, async ({ job_id, capability }): Promise<CallToolResult> => withToolStats(stats, "get_pdf_job", async () => {
     const row = await service.getJob(job_id, capability);
@@ -86,89 +97,100 @@ export async function handleMcpRequest(request: Request, service: PdfService, al
     server.registerTool("inspect_pdf", {
       title: "Inspect PDF",
       description: "Inspect a previously uploaded PDF using its document capability. Upload binary PDFs through POST /v1/documents; persist both the returned capability and recovery key securely.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
-      inputSchema: { document_id: z.string().uuid(), capability: z.string().min(40).max(64) },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
+      inputSchema: { document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents.") },
     }, async ({ document_id, capability }) => withToolStats(stats, "inspect_pdf", () => documentToolResult(() => documents.inspect(document_id, capability))));
 
     server.registerTool("get_document_map", {
       title: "Get PDF page map",
       description: "Return page labels, sizes, native-text previews, bookmarks, and sparse-text warnings. Set page to include up to 500 positioned text blocks for that page.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
-      inputSchema: { document_id: z.string().uuid(), capability: z.string().min(40).max(64), page: z.number().int().min(1).max(100).optional() },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
+      inputSchema: { document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents."), page: described(z.number().int().min(1).max(100), "Optional 1-based page number.").optional() },
     }, async ({ document_id, capability, page }) => withToolStats(stats, "get_document_map", () => documentToolResult(() => documents.getMap(document_id, capability, page))));
 
     server.registerTool("search_document", {
       title: "Search PDF text",
       description: "Find exact normalized text matches in native PDF text (no OCR). Results and excerpts are bounded.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
       inputSchema: {
-        document_id: z.string().uuid(), capability: z.string().min(40).max(64), query: z.string().min(1).max(200),
-        page: z.number().int().min(1).optional(), limit: z.number().int().min(1).max(20).optional(),
+        document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents."), query: described(z.string().min(1).max(200), "Exact or normalized text to find."),
+        page: described(z.number().int().min(1), "Optional 1-based page filter.").optional(), limit: described(z.number().int().min(1).max(20), "Maximum number of matches to return.").optional(),
       },
     }, async ({ document_id, capability, query, page, limit }) => withToolStats(stats, "search_document", () => documentToolResult(() => documents.search(document_id, capability, query, { ...(page !== undefined ? { page } : {}), ...(limit !== undefined ? { limit } : {}) }))));
 
     server.registerTool("batch_search_document", {
       title: "Batch search PDF text",
       description: "Search up to 20 exact normalized-text queries in one bounded call. Useful when an agent needs several clauses or fields from one PDF.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
-      inputSchema: { document_id: z.string().uuid(), capability: z.string().min(40).max(64), queries: z.array(z.string().min(1).max(200)).min(1).max(20), page: z.number().int().min(1).optional(), limit: z.number().int().min(1).max(20).optional() },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
+      inputSchema: { document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents."), queries: described(z.array(z.string().min(1).max(200)).min(1).max(20), "One to twenty exact or normalized text queries."), page: described(z.number().int().min(1), "Optional 1-based page filter.").optional(), limit: described(z.number().int().min(1).max(20), "Maximum matches per query.").optional() },
     }, async ({ document_id, capability, queries, page, limit }) => withToolStats(stats, "batch_search_document", () => documentToolResult(() => documents.batchSearch(document_id, capability, queries, { ...(page !== undefined ? { page } : {}), ...(limit !== undefined ? { limit } : {}) }))));
 
     server.registerTool("prepare_document_context", {
       title: "Prepare cited PDF context",
       description: "Rank native-text pages for a question and return a bounded context pack with page, block, and excerpt evidence. No model call or OCR is used.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
-      inputSchema: { document_id: z.string().uuid(), capability: z.string().min(40).max(64), query: z.string().min(1).max(200), max_chars: z.number().int().min(1000).max(32000).optional(), pages: z.array(z.number().int().min(1).max(100)).max(100).optional() },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
+      inputSchema: { document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents."), query: described(z.string().min(1).max(200), "Question or terms used for deterministic page ranking."), max_chars: described(z.number().int().min(1000).max(32000), "Maximum context characters.").optional(), pages: described(z.array(z.number().int().min(1).max(100)).max(100), "Optional 1-based pages to search.").optional() },
     }, async ({ document_id, capability, query, max_chars, pages }) => withToolStats(stats, "prepare_document_context", () => documentToolResult(() => documents.prepareContext(document_id, capability, query, max_chars, pages))));
 
     server.registerTool("extract_document_fields", {
       title: "Extract labeled PDF fields",
       description: "Extract caller-supplied literal labels and adjacent native-text values with page and block evidence. Missing labels return null; no semantic extraction or OCR is performed.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
-      inputSchema: { document_id: z.string().uuid(), capability: z.string().min(40).max(64), fields: z.array(z.object({ name: z.string().min(1).max(80), label: z.string().min(1).max(160), page: z.number().int().min(1).max(100).optional() })).min(1).max(20) },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
+      inputSchema: { document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents."), fields: described(z.array(z.object({ name: z.string().min(1).max(80).describe("Output field name."), label: z.string().min(1).max(160).describe("Literal label to locate."), page: z.number().int().min(1).max(100).optional().describe("Optional 1-based page filter.") })).min(1).max(20), "One to twenty literal labels to extract.") },
     }, async ({ document_id, capability, fields }) => withToolStats(stats, "extract_document_fields", () => documentToolResult(() => documents.extractFields(document_id, capability, fields))));
 
     server.registerTool("read_document", {
       title: "Read PDF pages",
       description: "Read extractable native text from up to 10 selected pages. Output is limited to 32,000 characters; scanned pages need OCR, which is not provided.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
-      inputSchema: { document_id: z.string().uuid(), capability: z.string().min(40).max(64), pages: z.array(z.number().int().min(1)).min(1).max(10) },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
+      inputSchema: { document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents."), pages: described(z.array(z.number().int().min(1)).min(1).max(10), "One to ten 1-based page numbers to read.") },
     }, async ({ document_id, capability, pages }) => withToolStats(stats, "read_document", () => documentToolResult(() => documents.read(document_id, capability, pages))));
 
     server.registerTool("verify_document_citation", {
       title: "Verify PDF text citation",
       description: "Check that a quote of 5 to 500 characters appears on the stated page in extracted native text. This does not establish truth or visual reading order.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
-      inputSchema: { document_id: z.string().uuid(), capability: z.string().min(40).max(64), page: z.number().int().min(1), quote: z.string().min(5).max(500) },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
+      inputSchema: { document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents."), page: described(z.number().int().min(1), "1-based page containing the quote."), quote: described(z.string().min(5).max(500), "Quote to verify in native PDF text.") },
     }, async ({ document_id, capability, page, quote }) => withToolStats(stats, "verify_document_citation", () => documentToolResult(() => documents.verifyCitation(document_id, capability, page, quote))));
 
     server.registerTool("compare_pdfs", {
       title: "Compare PDFs",
       description: "Compare page count and normalized native text between two separately authorized uploaded PDFs. Image-only and visual differences are not compared.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
       inputSchema: {
-        left_document_id: z.string().uuid(), left_capability: z.string().min(40).max(64),
-        right_document_id: z.string().uuid(), right_capability: z.string().min(40).max(64),
+        left_document_id: described(z.string().uuid(), "UUID of the earlier PDF."), left_capability: described(z.string().min(40).max(64), "Capability for the earlier PDF."),
+        right_document_id: described(z.string().uuid(), "UUID of the later PDF."), right_capability: described(z.string().min(40).max(64), "Capability for the later PDF."),
       },
     }, async ({ left_document_id, left_capability, right_document_id, right_capability }) => withToolStats(stats, "compare_pdfs", () => documentToolResult(() => documents.compare(left_document_id, left_capability, right_document_id, right_capability))));
 
     server.registerTool("validate_pdf_text", {
       title: "Validate PDF text expectations",
       description: "Check that the PDF parses, has an optional expected page count, and contains required text. This does not perform PDF/A, signature, visual, or OCR validation.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
       inputSchema: {
-        document_id: z.string().uuid(), capability: z.string().min(40).max(64),
-        page_count: z.number().int().min(1).max(100).optional(), required_text: z.array(z.string().min(1).max(500)).max(20).optional(),
+        document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents."),
+        page_count: described(z.number().int().min(1).max(100), "Expected number of pages.").optional(), required_text: described(z.array(z.string().min(1).max(500)).max(20), "Literal text strings that must be present.").optional(),
       },
     }, async ({ document_id, capability, page_count, required_text }) => withToolStats(stats, "validate_pdf_text", () => documentToolResult(() => documents.validate(document_id, capability, { ...(page_count !== undefined ? { pageCount: page_count } : {}), ...(required_text !== undefined ? { requiredText: required_text } : {}) }))));
 
     server.registerTool("render_pdf_page_region", {
       title: "Render PDF page region",
       description: "Render one authorized PDF page crop as PNG. x/y/width/height are normalized 0-1 page fractions; output is bounded to four million pixels.",
-      annotations: { readOnlyHint: true, idempotentHint: true },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      outputSchema: genericOutputSchema,
       inputSchema: {
-        document_id: z.string().uuid(), capability: z.string().min(40).max(64), page: z.number().int().min(1),
-        x: z.number().min(0).max(1), y: z.number().min(0).max(1), width: z.number().min(0.001).max(1), height: z.number().min(0.001).max(1), scale: z.number().min(0.5).max(3).optional(),
+        document_id: described(z.string().uuid(), "UUID returned by POST /v1/documents."), capability: described(z.string().min(40).max(64), "Document capability returned by POST /v1/documents."), page: described(z.number().int().min(1), "1-based page to render."),
+        x: described(z.number().min(0).max(1), "Normalized left crop coordinate."), y: described(z.number().min(0).max(1), "Normalized top crop coordinate."), width: described(z.number().min(0.001).max(1), "Normalized crop width."), height: described(z.number().min(0.001).max(1), "Normalized crop height."), scale: described(z.number().min(0.5).max(3), "Render scale multiplier.").optional(),
       },
     }, async ({ document_id, capability, page, x, y, width, height, scale }) => withToolStats(stats, "render_pdf_page_region", async () => {
       try {
@@ -221,18 +243,18 @@ async function withToolStats(stats: ToolStatsStore | undefined, tool: string, op
 
 function registerPaidTools(server: McpServer, paidTools: PaidToolService, stats: ToolStatsStore | undefined, prices: { webEvidencePriceUsd?: string; openApiPriceUsd?: string; chainPriceUsd?: string; webHostResolver?: PublicHostResolver; webFetch?: typeof fetch }): void {
   const webDefinition: PaidToolDefinition = { name: "web_evidence", resourcePath: "/mcp", priceUsd: prices.webEvidencePriceUsd ?? "0.005", description: "Fetch a public HTTPS page and return bounded citation-ready evidence.", inputSchema: { type: "object", required: ["url", "idempotency_key"], additionalProperties: false, properties: { url: { type: "string", format: "uri", maxLength: 2048 }, query: { type: "string", maxLength: 200 }, max_chars: { type: "integer", minimum: 2000, maximum: 24000 }, idempotency_key: { type: "string", minLength: 8, maxLength: 128 } } }, example: { url: "https://example.com/", query: "Example Domain", max_chars: 4000, idempotency_key: "web-evidence-0001" }, outputExample: { text: "...", sourceHash: "sha256" } };
-  server.registerTool("web_evidence", { title: "Web evidence", description: webDefinition.description, annotations: { readOnlyHint: true, idempotentHint: true }, inputSchema: { url: z.string().url().max(2048), query: z.string().max(200).optional(), max_chars: z.number().int().min(2000).max(24000).optional(), idempotency_key: z.string().min(8).max(128) } }, async ({ url, query, max_chars, idempotency_key }, extra) => {
+  server.registerTool("web_evidence", { title: "Web evidence", description: webDefinition.description, annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }, outputSchema: genericOutputSchema, inputSchema: { url: described(z.string().url().max(2048), "Public HTTPS page URL to fetch."), query: described(z.string().max(200), "Optional phrase to locate in the page.").optional(), max_chars: described(z.number().int().min(2000).max(24000), "Maximum characters to return.").optional(), idempotency_key: described(z.string().min(8).max(128), "Stable key used to make a paid retry idempotent.") } }, async ({ url, query, max_chars, idempotency_key }, extra) => {
     const input = { url, ...(query !== undefined ? { query } : {}), ...(max_chars !== undefined ? { max_chars } : {}) };
     return withToolStats(stats, "web_evidence", () => paidMcpCall(paidTools, webDefinition, input, idempotency_key, extra._meta?.["x402/payment"], () => fetchWebEvidence(input, prices.webFetch ?? fetch, prices.webHostResolver)), usdToSixDecimals(webDefinition.priceUsd));
   });
 
   const inspectDefinition: PaidToolDefinition = { name: "inspect_openapi", resourcePath: "/mcp", priceUsd: prices.openApiPriceUsd ?? "0.001", description: "Inspect a caller-supplied OpenAPI JSON document without fetching remote references.", inputSchema: { type: "object", required: ["spec", "idempotency_key"], additionalProperties: false, properties: { spec: {}, idempotency_key: { type: "string", minLength: 8, maxLength: 128 } } }, example: { spec: { openapi: "3.1.0", info: { title: "Example", version: "1" }, paths: {} }, idempotency_key: "openapi-inspect-0001" }, outputExample: { operations: [] } };
-  server.registerTool("inspect_openapi", { title: "Inspect OpenAPI", description: inspectDefinition.description, annotations: { readOnlyHint: true, idempotentHint: true }, inputSchema: { spec: z.any(), idempotency_key: z.string().min(8).max(128) } }, async ({ spec, idempotency_key }, extra) => {
+  server.registerTool("inspect_openapi", { title: "Inspect OpenAPI", description: inspectDefinition.description, annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }, outputSchema: genericOutputSchema, inputSchema: { spec: described(z.any(), "OpenAPI JSON document to inspect; remote references are not fetched."), idempotency_key: described(z.string().min(8).max(128), "Stable key used to make a paid retry idempotent.") } }, async ({ spec, idempotency_key }, extra) => {
     return withToolStats(stats, "inspect_openapi", () => paidMcpCall(paidTools, inspectDefinition, { spec }, idempotency_key, extra._meta?.["x402/payment"], () => Promise.resolve(inspectOpenApi(spec))), usdToSixDecimals(inspectDefinition.priceUsd));
   });
 
   const planDefinition: PaidToolDefinition = { name: "plan_api_request", resourcePath: "/mcp", priceUsd: "0.002", description: "Select an OpenAPI operation and generate a safe request plan without executing it.", inputSchema: { type: "object", required: ["spec", "idempotency_key"], additionalProperties: false, properties: { spec: {}, operation_id: { type: "string" }, path: { type: "string" }, method: { type: "string" }, idempotency_key: { type: "string", minLength: 8, maxLength: 128 } } }, example: { spec: { openapi: "3.1.0", info: { title: "Example API", version: "1" }, servers: [{ url: "https://api.example.com" }], paths: { "/users/{id}": { get: { operationId: "getUser", parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }], responses: { "200": { description: "OK" } } } } } }, operation_id: "getUser", idempotency_key: "openapi-plan-0001" }, outputExample: { request: { method: "GET", url: "https://api.example.com/users/{id}" } } };
-  server.registerTool("plan_api_request", { title: "Plan API request", description: planDefinition.description, annotations: { readOnlyHint: true, idempotentHint: true }, inputSchema: { spec: z.any(), operation_id: z.string().optional(), path: z.string().optional(), method: z.string().optional(), idempotency_key: z.string().min(8).max(128) } }, async ({ spec, operation_id, path, method, idempotency_key }, extra) => {
+  server.registerTool("plan_api_request", { title: "Plan API request", description: planDefinition.description, annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }, outputSchema: genericOutputSchema, inputSchema: { spec: described(z.any(), "OpenAPI JSON document containing the operation to plan."), operation_id: described(z.string(), "Preferred operationId selector.").optional(), path: described(z.string(), "Optional path selector.").optional(), method: described(z.string(), "Optional HTTP method selector.").optional(), idempotency_key: described(z.string().min(8).max(128), "Stable key used to make a paid retry idempotent.") } }, async ({ spec, operation_id, path, method, idempotency_key }, extra) => {
     const selector = { ...(operation_id ? { operation_id } : {}), ...(path ? { path } : {}), ...(method ? { method } : {}) };
     return withToolStats(stats, "plan_api_request", () => paidMcpCall(paidTools, planDefinition, { spec, operation_id, path, method }, idempotency_key, extra._meta?.["x402/payment"], () => Promise.resolve(planOpenApiRequest(spec, selector))), usdToSixDecimals(planDefinition.priceUsd));
   });
@@ -247,7 +269,7 @@ function registerPaidTools(server: McpServer, paidTools: PaidToolService, stats:
     },
     outputExample: { added: ["GET /health"], removed: [], changed: [] },
   };
-  server.registerTool("diff_openapi", { title: "Diff OpenAPI", description: diffDefinition.description, annotations: { readOnlyHint: true, idempotentHint: true }, inputSchema: { before: z.any(), after: z.any(), idempotency_key: z.string().min(8).max(128) } }, async ({ before, after, idempotency_key }, extra) => {
+  server.registerTool("diff_openapi", { title: "Diff OpenAPI", description: diffDefinition.description, annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }, outputSchema: genericOutputSchema, inputSchema: { before: described(z.any(), "Earlier OpenAPI JSON document."), after: described(z.any(), "Later OpenAPI JSON document."), idempotency_key: described(z.string().min(8).max(128), "Stable key used to make a paid retry idempotent.") } }, async ({ before, after, idempotency_key }, extra) => {
     return withToolStats(stats, "diff_openapi", () => paidMcpCall(paidTools, diffDefinition, { before, after }, idempotency_key, extra._meta?.["x402/payment"], () => Promise.resolve(diffOpenApi(before, after))), usdToSixDecimals(diffDefinition.priceUsd));
   });
 
@@ -264,7 +286,23 @@ function registerChainMcpTool(server: McpServer, paidTools: PaidToolService, sta
       ? { type: "object", required: ["token", "address", "idempotency_key"], additionalProperties: false, properties: { token: { type: "string", minLength: 1 }, address: { type: "string", minLength: 1 }, block: { anyOf: [{ type: "string" }, { type: "number" }] }, ...common } }
       : { type: "object", required: ["address", "idempotency_key"], additionalProperties: false, properties: { address: { type: "string", minLength: 1 }, block: { anyOf: [{ type: "string" }, { type: "number" }] }, ...common } };
   const definition: PaidToolDefinition = { name, resourcePath: "/mcp", priceUsd, description, inputSchema: schema, example: kind === "transaction" ? { network: "eip155:8453", tx_hash: EXAMPLE_TX_HASH, idempotency_key: `${name}-0001` } : kind === "erc20-balance" ? { network: "eip155:8453", token: EXAMPLE_USDC, address: EXAMPLE_ADDRESS, idempotency_key: `${name}-0001` } : { network: "eip155:8453", address: EXAMPLE_ADDRESS, idempotency_key: `${name}-0001` }, outputExample: { network: "eip155:8453", observedAt: "2026-01-01T00:00:00.000Z" } };
-  server.registerTool(name, { title: name, description, annotations: { readOnlyHint: true, idempotentHint: true }, inputSchema }, async (args: Record<string, unknown>, extra) => withToolStats(stats, name, () => { const { idempotency_key, ...input } = args; return paidMcpCall(paidTools, definition, input, String(idempotency_key), extra._meta?.["x402/payment"], () => readChainBalance(input as never, kind)); }, usdToSixDecimals(priceUsd)));
+  server.registerTool(name, { title: name, description, annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }, outputSchema: genericOutputSchema, inputSchema: describeChainInput(inputSchema, kind) }, async (args: Record<string, unknown>, extra) => withToolStats(stats, name, () => { const { idempotency_key, ...input } = args; return paidMcpCall(paidTools, definition, input, String(idempotency_key), extra._meta?.["x402/payment"], () => readChainBalance(input as never, kind)); }, usdToSixDecimals(priceUsd)));
+}
+
+function describeChainInput(inputSchema: Record<string, z.ZodTypeAny>, kind: "balance" | "transaction" | "erc20-balance"): Record<string, z.ZodTypeAny> {
+  const descriptions: Record<string, string> = {
+    network: "CAIP-2 network identifier; use eip155:8453 for Base mainnet or eip155:84532 for Base Sepolia.",
+    address: kind === "erc20-balance" ? "EVM wallet address whose token balance should be read." : "EVM wallet address whose native balance should be read.",
+    token: "ERC-20 contract address on the selected Base network.",
+    tx_hash: "Transaction hash to inspect on the selected Base network.",
+    block: "Optional block number or block tag such as latest.",
+    idempotency_key: "Stable key used to make a paid retry idempotent.",
+  };
+  for (const [key, description] of Object.entries(descriptions)) {
+    const schema = inputSchema[key];
+    if (schema) inputSchema[key] = described(schema, description);
+  }
+  return inputSchema;
 }
 
 async function paidMcpCall<T>(paidTools: PaidToolService, definition: PaidToolDefinition, input: unknown, idempotencyKey: string, payment: unknown, handler: () => Promise<T>): Promise<CallToolResult> {
